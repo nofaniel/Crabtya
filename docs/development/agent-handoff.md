@@ -1,5 +1,27 @@
 # Agent Handoff
 
+## Session Summary (2026-05-13) - Job 02 Git Publication
+
+**Status**: Complete. Repository initialized, initial commit made, remote configured.
+
+**What changed:**
+
+- `.gitignore` created — excludes game binaries, BepInEx runtime, doorstop install files, runtime state (`mod-state.json`, `startup-commands.json`, `runtime-settings.json`), `CrabtyaData/`, build outputs (`**/bin/`, `**/obj/`), release package directories, draft brand assets, `opencode.json`, IDE files.
+- `.gitattributes` created — `* text=auto eol=lf`; binary markers for `*.png`, `*.dll`, `*.zip`, `*.pdb`.
+- Root `README.md` rewritten for GitHub: player install (PowerShell installer + manual), 6-mod included mods table, mod maker definitions table (all v1 surfaces), contributor section with build/package commands and key docs table, "what not to commit" guidance.
+- `packages/README.md` updated with artifact descriptions, install instructions, fingerprint verification, exact regeneration command.
+- `git init` completed; initial commit `60c04e4` — 142 files, 20916 insertions.
+- Remote `origin` configured: `https://github.com/nofaniel/Crabtya.git`.
+- `docs/development/jobs/job-02-git-initial-readiness.md` marked Done.
+- `PLAN.md` Job 02 row updated to Done.
+
+**What remains:**
+
+- Push to remote is pending user instruction. The GitHub repository `https://github.com/nofaniel/Crabtya.git` may need to be created before pushing.
+- When ready: `git push -u origin master`
+
+---
+
 ## Session Summary (2026-05-13) - Job 10 Validation + Bug Fixes
 
 **Status**: 10/15 checklist items confirmed from runtime logs. 4 bugs found and fixed during validation. Jobs 05, 06, 08 closed as fully done.

@@ -46,3 +46,15 @@ Use the finalized logo image files at repo root (`logo-L.png`, `logo-M.png`, `lo
 - A new visitor can understand what Crabtya is, how to install it, how to install mods, and which sample mods exist.
 - A contributor can tell what not to commit.
 - Any remaining publication risks are explicitly called out instead of hidden.
+
+## Status
+
+Done (2026-05-13).
+
+- `.gitignore` created: excludes game binaries, BepInEx runtime, doorstop install, runtime state, build outputs, draft brand assets, `opencode.json`, IDE files.
+- `.gitattributes` created: `* text=auto eol=lf`; binary markers for `*.png`, `*.dll`, `*.zip`, `*.pdb`.
+- Root `README.md` rewritten for GitHub: player install, included mods table, mod maker section with definitions table, contributor section with key docs table.
+- `packages/README.md` updated with artifact descriptions, install instructions, fingerprint verification, and regeneration command.
+- `git init` completed; initial commit `60c04e4` — 142 files, 20916 insertions.
+- Remote `origin` configured: `https://github.com/nofaniel/Crabtya.git`.
+- Push to remote pending user instruction (repository may not yet exist on GitHub).
