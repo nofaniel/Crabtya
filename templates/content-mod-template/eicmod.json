@@ -1,0 +1,23 @@
+{
+  "id": "author.content-mod",
+  "name": "My Content Mod",
+  "version": "1.0.0",
+  "author": "YourName",
+  "description": "A content-only mod demonstrating all declarative definition types.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/camera.json",
+      "defs/localization.en.json",
+      "defs/balance.json",
+      "defs/visual.json",
+      "defs/intro-skip.json"
+    ]
+  },
+  "defaultEnabled": true
+}

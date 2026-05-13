@@ -1,0 +1,21 @@
+{
+  "id": "faniel.mvp-sample",
+  "name": "MVP Sample Mod",
+  "version": "1.0.0",
+  "author": "faniel",
+  "description": "Sample mod that changes the gameplay camera size and player base sprite.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/camera.json",
+      "defs/player-sprite.json"
+    ]
+  },
+  "assemblies": [],
+  "defaultEnabled": true
+}

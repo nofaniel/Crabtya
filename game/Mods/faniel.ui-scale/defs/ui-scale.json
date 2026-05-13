@@ -1,0 +1,14 @@
+﻿{
+  "type": "uiScale",
+  "id": "faniel.ui-scale.global",
+  "target": "ui.scale",
+  "op": "set",
+  "value": 1.0,
+  "settings": {
+    "slider": true,
+    "label": "UI Scale",
+    "min": 0.5,
+    "max": 1.15,
+    "step": 0.05
+  }
+}

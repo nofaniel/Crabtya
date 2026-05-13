@@ -1,0 +1,20 @@
+{
+  "id": "faniel.fov-slider",
+  "name": "Gameplay FOV Slider",
+  "version": "1.0.0",
+  "author": "faniel",
+  "description": "Adds an adjustable gameplay FOV slider to the in-game settings UI.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/fov-slider.json"
+    ]
+  },
+  "assemblies": [],
+  "defaultEnabled": true
+}

@@ -1,0 +1,20 @@
+﻿{
+  "type": "introSkip",
+  "id": "faniel.no-intro.skip-videos",
+  "mode": "containsAny",
+  "matchContains": [
+    "intro",
+    "opening",
+    "splash",
+    "logo",
+    "boot",
+    "startup",
+    "publisher",
+    "studio",
+    "titlecard",
+    "cinematic",
+    "cutscene",
+    "oddvideoplayer",
+    "smvideoplayer"
+  ]
+}

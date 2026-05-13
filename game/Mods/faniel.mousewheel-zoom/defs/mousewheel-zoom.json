@@ -1,0 +1,15 @@
+{
+  "type": "cameraPatch",
+  "id": "faniel.mousewheel-zoom.gameplay-fov",
+  "target": "camera.orthographicSize",
+  "op": "multiply",
+  "value": 1.0,
+  "settings": {
+    "mouseWheel": true,
+    "invert": false,
+    "label": "Wheel Zoom",
+    "min": 0.75,
+    "max": 3.0,
+    "step": 0.05
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "visual",
+  "id": "faniel.mvp-sample.player-sprite",
+  "target": "player.baseSprite",
+  "image": "assets/base-crab.png",
+  "pixelsPerUnit": 100
+}

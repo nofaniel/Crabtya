@@ -1,0 +1,7 @@
+﻿{
+  "type": "balancePatch",
+  "id": "persist.test.sample.balance",
+  "target": "player.stat.NumberOfStandardEvolutionChoices",
+  "op": "add",
+  "value": 2
+}

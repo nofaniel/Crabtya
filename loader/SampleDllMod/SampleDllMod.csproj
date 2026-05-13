@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>faniel.dll-sample</AssemblyName>
+    <RootNamespace>Faniel.DllSample</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Crabtya.ModApi\Crabtya.ModApi.csproj" />
+  </ItemGroup>
+
+  <Target Name="DeploySampleModDll" AfterTargets="Build">
+    <MakeDir Directories="..\..\game\Mods\faniel.dll-sample\bin" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="..\..\game\Mods\faniel.dll-sample\bin\faniel.dll-sample.dll" />
+  </Target>
+</Project>

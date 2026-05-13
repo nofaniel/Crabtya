@@ -1,0 +1,8 @@
+# Normalize line endings to LF on commit, checkout as LF on all platforms.
+* text=auto eol=lf
+
+# Binary files — no line-ending conversion.
+*.png binary
+*.dll binary
+*.zip binary
+*.pdb binary

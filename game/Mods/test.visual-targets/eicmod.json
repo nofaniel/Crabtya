@@ -1,0 +1,18 @@
+{
+  "id": "test.visual-targets",
+  "name": "Visual Targets Test",
+  "version": "1.0.0",
+  "author": "Agent",
+  "description": "Test mod for all four visual target types: player.baseSprite, enemy.baseSprite, gameobject.named, sprite.named",
+  "loaderVersion": "1.x",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "dependencies": [],
+  "content": {
+    "definitions": [
+      "defs/enemy-sprite.json",
+      "defs/gameobject-named.json",
+      "defs/sprite-named.json"
+    ]
+  }
+}

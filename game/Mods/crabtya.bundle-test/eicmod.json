@@ -1,0 +1,19 @@
+{
+  "id": "crabtya.bundle-test",
+  "name": "Crabtya Bundle Proof",
+  "version": "1.0.0",
+  "author": "Crabtya",
+  "description": "Internal end-to-end AssetBundle proof of concept. Place a Unity 6000.2.15f1 StandaloneWindows64 bundle at bundles/test-assets, then enable this mod and restart.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": ["bundles/test-assets"],
+    "definitions": []
+  },
+  "assemblies": ["bin/crabtya.bundle-test.dll"],
+  "entrypoints": ["Crabtya.BundleTest.BundleTestEntrypoint"],
+  "defaultEnabled": false
+}

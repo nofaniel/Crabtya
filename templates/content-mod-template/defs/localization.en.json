@@ -1,0 +1,8 @@
+{
+  "type": "localization",
+  "locale": "en",
+  "entries": {
+    "UI_SOME_KEY": "My custom text",
+    "UI_ANOTHER_KEY": "Another replacement"
+  }
+}

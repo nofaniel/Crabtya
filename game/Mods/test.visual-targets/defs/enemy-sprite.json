@@ -1,0 +1,8 @@
+{
+  "$schema": "../../schema/visual-def.schema.json",
+  "type": "visual",
+  "id": "test.visual-targets.enemy-sprite",
+  "target": "enemy.baseSprite",
+  "image": "assets/test-enemy.png",
+  "pixelsPerUnit": 100
+}

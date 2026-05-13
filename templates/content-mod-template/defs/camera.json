@@ -1,0 +1,14 @@
+{
+  "type": "cameraPatch",
+  "id": "author.content-mod.camera",
+  "target": "camera.orthographicSize",
+  "op": "multiply",
+  "value": 1.2,
+  "settings": {
+    "slider": true,
+    "label": "Zoom",
+    "min": 0.75,
+    "max": 2.0,
+    "step": 0.05
+  }
+}

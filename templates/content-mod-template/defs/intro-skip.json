@@ -1,0 +1,11 @@
+{
+  "type": "introSkip",
+  "id": "author.content-mod.no-intro",
+  "mode": "containsAny",
+  "matchContains": [
+    "intro",
+    "opening",
+    "splash",
+    "logo"
+  ]
+}

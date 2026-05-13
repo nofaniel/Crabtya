@@ -1,0 +1,20 @@
+{
+  "id": "faniel.mousewheel-zoom",
+  "name": "Mouse Wheel Zoom",
+  "version": "1.0.0",
+  "author": "faniel",
+  "description": "Adds gameplay zoom control on mouse wheel using a dedicated camera patch mod.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/mousewheel-zoom.json"
+    ]
+  },
+  "assemblies": [],
+  "defaultEnabled": false
+}

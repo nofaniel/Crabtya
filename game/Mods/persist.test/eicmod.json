@@ -1,0 +1,21 @@
+{
+  "id": "persist.test",
+  "name": "Sample Content Slice",
+  "version": "1.0.0",
+  "author": "Agent",
+  "description": "Sample balancePatch and localization definitions for vertical-slice validation",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/d1.json",
+      "defs/loc.en.json"
+    ]
+  },
+  "assemblies": [],
+  "defaultEnabled": true
+}

@@ -1,0 +1,23 @@
+{
+  "id": "faniel.dll-sample",
+  "name": "Sample DLL Mod",
+  "version": "1.0.0",
+  "author": "faniel",
+  "description": "Sample managed DLL entrypoint mod using Crabtya.ModApi settings and logging.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": []
+  },
+  "assemblies": [
+    "bin/faniel.dll-sample.dll"
+  ],
+  "entrypoints": [
+    "Faniel.DllSample.SampleDllEntrypoint"
+  ],
+  "defaultEnabled": false
+}

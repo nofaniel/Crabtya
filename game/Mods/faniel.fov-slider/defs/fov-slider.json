@@ -1,0 +1,14 @@
+{
+  "type": "cameraPatch",
+  "id": "faniel.fov-slider.gameplay-fov",
+  "target": "camera.orthographicSize",
+  "op": "multiply",
+  "value": 1.0,
+  "settings": {
+    "slider": true,
+    "label": "FOV",
+    "min": 0.75,
+    "max": 2.0,
+    "step": 0.05
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "cameraPatch",
+  "id": "faniel.mvp-sample.camera",
+  "target": "camera.orthographicSize",
+  "op": "multiply",
+  "value": 1.35
+}

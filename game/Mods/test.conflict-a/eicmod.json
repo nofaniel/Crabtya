@@ -1,0 +1,20 @@
+{
+  "id": "test.conflict-a",
+  "name": "Conflict Test Mod A",
+  "version": "1.0.0",
+  "author": "Crabtya",
+  "description": "Job 05 test fixture. Declares an explicit conflict with test.conflict-b and shares a definition ID for overlap detection testing. Keep defaultEnabled=false.",
+  "targetGame": "Everything is Crab",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "conflicts": ["test.conflict-b"],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/shared-balance.json"
+    ]
+  },
+  "assemblies": [],
+  "defaultEnabled": false
+}

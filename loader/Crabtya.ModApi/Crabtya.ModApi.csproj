@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>annotations</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Crabtya.ModApi</AssemblyName>
+    <RootNamespace>Crabtya.ModApi</RootNamespace>
+    <Product>Crabtya.ModApi</Product>
+    <AssemblyTitle>Crabtya.ModApi</AssemblyTitle>
+  </PropertyGroup>
+</Project>

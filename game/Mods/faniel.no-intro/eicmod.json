@@ -1,0 +1,20 @@
+﻿{
+  "id": "faniel.no-intro",
+  "name": "No Intro",
+  "version": "1.0.0",
+  "author": "faniel",
+  "description": "Skips intro and splash videos before main menu.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": [
+      "defs/no-intro.json"
+    ]
+  },
+  "assemblies": [],
+  "defaultEnabled": true
+}

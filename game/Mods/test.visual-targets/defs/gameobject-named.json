@@ -1,0 +1,8 @@
+{
+  "$schema": "../../schema/visual-def.schema.json",
+  "type": "visual",
+  "id": "test.visual-targets.gameobject-named",
+  "target": "gameobject.named:TestObject*",
+  "image": "assets/test-gameobject.png",
+  "pixelsPerUnit": 100
+}

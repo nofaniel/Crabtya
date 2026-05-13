@@ -1,0 +1,17 @@
+{
+  "id": "test.enemy-stat",
+  "name": "Enemy Stat Patch Test",
+  "version": "1.0.0",
+  "description": "Dev fixture for Job 08 — verifies enemy.stat.* and enemy.<archetype>.stat.* balance patches apply at runtime. NOT a release mod.",
+  "author": "crabtya-dev",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "defaultEnabled": false,
+  "content": {
+    "definitions": [
+      "defs/enemy-global-maxhp.json",
+      "defs/enemy-blobfish-speed.json"
+    ]
+  }
+}

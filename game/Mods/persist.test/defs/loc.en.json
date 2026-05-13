@@ -1,0 +1,13 @@
+{
+  "type": "localization",
+  "locale": "en",
+  "entries": {
+    "UI_Codex": "Codex (Persist Test Override)",
+    "UI_Challenges": "Challenges (Persist Test Override)",
+    "DIFFICULTY_TWO_TITLE": "Hard (Persist Test Override)",
+    "EVOLUTION_ATTACK_BASICSTARTING_TITLE": "Basic Strike (Persist Test Override)",
+    "EVOLUTION_PASSIVE_OUTLIER_TITLE": "Outlier (Persist Test Override)",
+    "EVOLUTION_PASSIVE_OUTLIER_DESCRIPTION": "Gain a Random Legendary Evolution => Chance to be a Legendary-only Evolution: 2x",
+    "EVOLUTION_PASSIVE_OUTLIER_FUNFACT": "Persist test mod says: this card now has an override fun fact."
+  }
+}

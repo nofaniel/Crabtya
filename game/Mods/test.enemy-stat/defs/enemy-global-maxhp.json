@@ -1,0 +1,7 @@
+{
+  "type": "balancePatch",
+  "id": "test.enemy-stat.global-maxhp",
+  "target": "enemy.stat.MaxHp",
+  "op": "multiply",
+  "value": 0.5
+}

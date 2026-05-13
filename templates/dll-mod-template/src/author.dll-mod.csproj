@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Target .NET 6 to match the IL2CPP runtime shipped with the game. -->
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Output the DLL with the same name declared in eicmod.json assemblies. -->
+    <AssemblyName>author.dll-mod</AssemblyName>
+    <!-- Build straight into bin/ so deployment matches the manifest path. -->
+    <OutputPath>..\..\bin</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Reference Crabtya.ModApi.dll from the game's BepInEx plugins folder.
+      Adjust the path to point to where your game is installed.
+    -->
+    <Reference Include="Crabtya.ModApi">
+      <HintPath>..\..\..\..\game\BepInEx\plugins\Crabtya.ModApi.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

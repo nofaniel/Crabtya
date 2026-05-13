@@ -1,0 +1,83 @@
+{
+    "createdAtUtc":  "2026-05-13T15:50:52.0322786Z",
+    "releaseLabel":  "v1.0.0",
+    "outputRoot":  "N:\\Games\\Everything.is.Crab\\packages",
+    "loaderPackage":  {
+                          "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\loader\\EverythingIsCrab.ModLoader-v1.0.0.zip",
+                          "ReleaseLabel":  "v1.0.0",
+                          "PluginSize":  266752,
+                          "PluginLastWriteUtc":  "2026-05-13T15:33:09.4945671Z"
+                      },
+    "modPackages":  [
+                        {
+                            "Id":  "faniel.dll-sample",
+                            "Name":  "Sample DLL Mod",
+                            "Version":  "1.0.0",
+                            "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\mods\\faniel.dll-sample-1.0.0.zip",
+                            "WarningCount":  0,
+                            "Warnings":  [
+
+                                         ]
+                        },
+                        {
+                            "Id":  "faniel.fov-slider",
+                            "Name":  "Gameplay FOV Slider",
+                            "Version":  "1.0.0",
+                            "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\mods\\faniel.fov-slider-1.0.0.zip",
+                            "WarningCount":  0,
+                            "Warnings":  [
+
+                                         ]
+                        },
+                        {
+                            "Id":  "faniel.mousewheel-zoom",
+                            "Name":  "Mouse Wheel Zoom",
+                            "Version":  "1.0.0",
+                            "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\mods\\faniel.mousewheel-zoom-1.0.0.zip",
+                            "WarningCount":  0,
+                            "Warnings":  [
+
+                                         ]
+                        },
+                        {
+                            "Id":  "faniel.mvp-sample",
+                            "Name":  "MVP Sample Mod",
+                            "Version":  "1.0.0",
+                            "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\mods\\faniel.mvp-sample-1.0.0.zip",
+                            "WarningCount":  0,
+                            "Warnings":  [
+
+                                         ]
+                        },
+                        {
+                            "Id":  "faniel.no-intro",
+                            "Name":  "No Intro",
+                            "Version":  "1.0.0",
+                            "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\mods\\faniel.no-intro-1.0.0.zip",
+                            "WarningCount":  0,
+                            "Warnings":  [
+
+                                         ]
+                        },
+                        {
+                            "Id":  "faniel.ui-scale",
+                            "Name":  "UI Scale Settings",
+                            "Version":  "1.0.0",
+                            "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\mods\\faniel.ui-scale-1.0.0.zip",
+                            "WarningCount":  0,
+                            "Warnings":  [
+
+                                         ]
+                        }
+                    ],
+    "templatePackages":  [
+                             {
+                                 "Name":  "content-mod-template",
+                                 "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\templates\\content-mod-template-v1.0.0.zip"
+                             },
+                             {
+                                 "Name":  "dll-mod-template",
+                                 "ZipPath":  "N:\\Games\\Everything.is.Crab\\packages\\templates\\dll-mod-template-v1.0.0.zip"
+                             }
+                         ]
+}

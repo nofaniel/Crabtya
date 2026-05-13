@@ -1,0 +1,23 @@
+{
+  "id": "author.dll-mod",
+  "name": "My DLL Mod",
+  "version": "1.0.0",
+  "author": "YourName",
+  "description": "A managed DLL mod with settings registration and lifecycle hooks.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": []
+  },
+  "assemblies": [
+    "bin/author.dll-mod.dll"
+  ],
+  "entrypoints": [
+    "Author.DllMod.ModEntrypoint"
+  ],
+  "defaultEnabled": true
+}
