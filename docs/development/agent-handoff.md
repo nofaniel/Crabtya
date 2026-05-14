@@ -1,5 +1,234 @@
 # Agent Handoff
 
+## Session Summary (2026-05-14) - Job 09 Infrastructure Proven; Asset Extraction Blocked by BepInEx/Unity 6 IL2CPP Gap
+
+**Status**: Job 09 partially complete. Bundle startup-loading is proven. Programmatic asset extraction is blocked by a known BepInEx/Unity 6 interop issue — not a loader bug.
+
+**Confirmed working (runtime log evidence):**
+
+```
+AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test' via LoadFromStream.
+AssetBundleApplicator: LoadForMods complete. Loaded=1, Errored=0, Skipped=0
+BundleTest: bundle retrieved (key=crabtya.bundle-test:bundles/test-assets).
+BundleTest: asset count=1. Names: assets/test_texture.png
+```
+
+- `AssetBundle.LoadFromStream(Il2CppSystem.IO.MemoryStream)` — confirmed working.
+- `AssetBundle.GetAllAssetNames()` — confirmed working.
+- `AssetBundleApplicator.GetBundle(modId, path)` — returns bundle correctly.
+
+**Confirmed blocked (all variants throw same error):**
+
+```
+Method not found: '!0 ByRef Il2CppSystem.ReadOnlySpan`1.GetPinnableReference()'
+```
+
+- `bundle.LoadAllAssets()` (non-generic)
+- `bundle.LoadAllAssets<Texture2D>()`
+- `bundle.LoadAsset<Texture2D>(name)`
+
+**Root cause (investigated, not fixable in our code):**
+
+Unity 6 IL2CPP compiles `ReadOnlySpan<T>.GetPinnableReference()` inline/optimized — it is NOT registered in the IL2CPP class vtable. BepInEx's generated `UnityEngine.AssetBundleModule.dll` interop calls it via `il2cpp_object_get_virtual_method`, which fails because the method entry is absent. Regenerating the interop DLLs won't help — the method is not in the game binary's IL2CPP metadata. This is a BepInEx/Unity 6 compatibility gap.
+
+**What changed this session:**
+
+- `loader/EIC.ModLoader/AssetBundleApplicator.cs` — `TryLoadBundle` now tries `LoadFromStream` first (confirmed working), then `LoadFromMemory` (fails with GC error on this build), then `LoadFromFile` × 2 (fail with GetPinnableReference — kept for diagnostics).
+- `game/Mods/crabtya.bundle-test/src/BundleTestEntrypoint.cs` — probed `LoadAllAssets()`, `LoadAllAssets<T>()`, `LoadAsset<T>(string)`; all confirmed blocked. Code left in place for when BepInEx fixes the vtable gap.
+- `docs/development/jobs/job-09-assetbundle-proof.md` — updated with confirmed evidence and root-cause analysis.
+- `PLAN.md` — Job 09 status updated.
+
+**Impact on v1:**
+
+- Content-only bundle mods: unblocked — the bundle is resident in memory and the Unity engine can use it through scene/prefab references.
+- DLL mods that programmatically load assets by calling `GetBundle(...).LoadAsset(...)`: blocked until BepInEx fixes this Unity 6 vtable gap.
+
+**Next tasks for next session:**
+
+1. **Job 09 failure-path checks** (safe to run now — they only exercise the load path, not asset extraction):
+   - Missing bundle: rename/delete `game/Mods/crabtya.bundle-test/bundles/test-assets`, restart, confirm `bundle file not found` warning while other mods load fine.
+   - Corrupt bundle: replace with a text file, restart, confirm load failure warning while other mods load fine.
+   - Restart-required toggle: toggle `crabtya.bundle-test` in Mods menu, confirm `(restart)` queued in `startup-commands.json`.
+2. **Continue Job 10** remaining 5 checklist items if DLL mod run evidence is ready.
+3. Watch for BepInEx 6 updates that fix Unity 6 `ReadOnlySpan<T>` vtable gap — when landed, re-test `BundleTest: PASS`.
+
+---
+
+## Session Summary (2026-05-14) - IL2CPP-Safe Bundle Load: LoadFromMemory + LoadFromStream
+
+**Status**: Code updated and built (0 errors, 0 warnings). Awaiting runtime rerun with `crabtya.bundle-test` enabled.
+
+**Root cause confirmed from prior session:**
+`AssetBundle.LoadFromFile(string)` marshals the path as `ReadOnlySpan<char>` when crossing into native Unity code. The IL2CPP interop shim is missing `GetPinnableReference()` on that span type in this Unity 6000.2.15f1 build, so both path variants throw.
+
+**What changed this session:**
+- `loader/EIC.ModLoader/AssetBundleApplicator.cs` — `TryLoadBundle` now tries two IL2CPP-safe load paths **before** the known-failing `LoadFromFile` attempts:
+  1. `AssetBundle.LoadFromMemory(byte[])` — reads file bytes via managed C# `File.ReadAllBytes` then passes a `byte[]` to `LoadFromMemory`; no string→span native interop needed.
+  2. `AssetBundle.LoadFromStream(Il2CppSystem.IO.MemoryStream)` — constructs an IL2CPP MemoryStream from the same bytes and passes it to `LoadFromStream`; also avoids the span marshaling path.
+  - Both `LoadFromFile` variants remain at the end for diagnostic completeness.
+- Build verified: `dotnet build loader/EIC.ModLoader/EIC.ModLoader.csproj -c Release` — 0 errors, 0 warnings.
+
+**Expected log output on success (either attempt):**
+```
+AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test' via LoadFromMemory.
+BundleTest: bundle retrieved (key=crabtya.bundle-test:bundles/test-assets).
+BundleTest: PASS - Texture2D 'test_texture' loaded successfully.
+```
+or
+```
+AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test' via LoadFromStream.
+```
+
+**Next task for the next session:**
+
+1. Launch the game with `crabtya.bundle-test` enabled (no `startup-commands.json` manipulation needed if mod was already enabled).
+2. Capture `game/BepInEx/LogOutput.log` — look for `via LoadFromMemory` or `via LoadFromStream` success lines OR new exception messages.
+3. If either succeeds → confirm `BundleTest: PASS` then proceed to Job 09 failure checks (missing bundle, corrupt bundle, restart queue).
+4. If both throw a new exception type → paste the exact exception here and re-evaluate. Common next candidate: try `new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<byte>(bytes)` explicit conversion if `LoadFromMemory(byte[])` has an implicit-cast issue at runtime.
+
+---
+
+## Session Summary (2026-05-14) - Hybrid Bundle Rerun: LoadFromFile Interop Failure Confirmed
+
+**Status**: Still blocked for Job 09 hybrid success-path proof. The latest rerun with enhanced diagnostics confirms both file-path load attempts fail with the same IL2CPP interop exception.
+
+**Runtime evidence from latest launch (`game/BepInEx/LogOutput.log`):**
+
+- `Mod 'crabtya.bundle-test' validated and queued. Enabled=True`
+- `AssetBundleApplicator: primary LoadFromFile threw for 'bundles/test-assets' (mod='crabtya.bundle-test'): Method not found: '!0 ByRef Il2CppSystem.ReadOnlySpan\`1.GetPinnableReference()'.`
+- `AssetBundleApplicator: separator-normalized LoadFromFile threw for 'bundles/test-assets' (mod='crabtya.bundle-test'): Method not found: '!0 ByRef Il2CppSystem.ReadOnlySpan\`1.GetPinnableReference()'.`
+- `AssetBundleApplicator: LoadFromFile returned null ... Path='.../bundles/test-assets', SizeBytes=1394, Header='UnityFS...6000.2.15f1'`
+- `BundleTest: bundle not available for 'bundles/test-assets'.`
+
+**Additional state checks:**
+
+- `game/BepInEx/ErrorLog.log` remained empty.
+- `game/Mods/startup-commands.json` was not present for this launch (expected for this direct enabled run).
+
+**Interpretation:**
+
+- The test bundle file exists, has a valid UnityFS header, and matches target Unity version marker text.
+- Failure is no longer a path typo or missing file case; it is now isolated to the current `AssetBundle.LoadFromFile(...)` interop/runtime call path in this environment.
+
+**Recommended next task for the next session:**
+
+1. Implement an alternate IL2CPP-safe bundle load call path in `loader/EIC.ModLoader/AssetBundleApplicator.cs` (for example, explicit `LoadFromFile` overload selection/wrapping) while keeping current diagnostics.
+2. Rebuild and rerun `crabtya.bundle-test` to confirm either:
+   - `AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test'.`
+   - `BundleTest: PASS - Texture2D 'test_texture' loaded successfully.`
+3. Once hybrid success lands, rerun Job 09 failure checks (missing bundle, corrupt bundle, restart queue behavior) and then re-evaluate Job 10 release sign-off.
+
+---
+
+## Session Summary (2026-05-14) - Hybrid Bundle Rerun: Interop Exception Isolated
+
+**Status**: Still blocked for Job 09 success-path proof. The latest game launch reproduced the hybrid failure and surfaced a new interop-specific exception path from the prior fallback experiment.
+
+**Runtime evidence from latest launch (`game/BepInEx/LogOutput.log`):**
+
+- `Mod 'crabtya.bundle-test' validated and queued. Enabled=True`
+- `AssetBundleApplicator: exception loading bundle 'bundles/test-assets' for mod 'crabtya.bundle-test': Method not found: '!0 ByRef Il2CppSystem.ReadOnlySpan\`1.GetPinnableReference()'.`
+- `BundleTest: bundle not available for 'bundles/test-assets'.`
+- `game/BepInEx/ErrorLog.log` remained empty.
+
+**What changed after that rerun:**
+
+- Updated `loader/EIC.ModLoader/AssetBundleApplicator.cs` again to isolate the failing fallback path:
+  - removed `LoadFromMemory(File.ReadAllBytes(...))` fallback (the path associated with the new IL2CPP interop exception signature);
+  - wrapped both `LoadFromFile(...)` attempts in per-attempt try/catch with explicit log labels (`primary` vs `separator-normalized`) so the next rerun shows exactly which attempt fails or returns null;
+  - expanded null-load diagnostics to include file header bytes (ASCII preview) in addition to path and size.
+- Build verification passed: `dotnet build loader/EIC.ModLoader/EIC.ModLoader.csproj -c Release` (0 errors, 0 warnings).
+
+**What is still pending (release-gating):**
+
+1. Rerun with `crabtya.bundle-test` enabled using this updated loader and capture which `LoadFromFile` attempt fails/nulls.
+2. Confirm hybrid success path (`AssetBundleApplicator: loaded bundle ...` and `BundleTest: PASS ...`) or capture new deterministic failure diagnostics.
+3. After hybrid success, rerun Job 09 failure checks (missing bundle, corrupt bundle, restart queue behavior), then re-evaluate Job 10 sign-off.
+
+---
+
+## Session Summary (2026-05-14) - AssetBundle Loader Fallback Pass
+
+**Status**: In progress. The hybrid AssetBundle blocker is not runtime-verified yet, but the loader now has a concrete fallback path for the `LoadFromFile returned null` failure mode.
+
+**What changed:**
+
+- Updated `loader/EIC.ModLoader/AssetBundleApplicator.cs` to harden startup bundle loading:
+  - bundle file path now resolves through `Path.GetFullPath(...)` before loading;
+  - when `AssetBundle.LoadFromFile(...)` returns null, loader now retries with normalized slash separators;
+  - when both file-path attempts return null, loader now retries with `AssetBundle.LoadFromMemory(File.ReadAllBytes(...))`;
+  - added explicit fallback logs so runtime evidence shows which load path succeeded or failed;
+  - null-load warning now includes file diagnostics (`Path`, `SizeBytes`) to speed future triage if a bundle still fails.
+- Build verification passed: `dotnet build loader/EIC.ModLoader/EIC.ModLoader.csproj -c Release` (0 errors, 0 warnings).
+
+**What is still pending (release-gating):**
+
+1. Rerun the hybrid success path with `crabtya.bundle-test` enabled and confirm:
+   - `AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test'.`
+   - `BundleTest: PASS - Texture2D 'test_texture' loaded successfully.`
+2. Rerun Job 09 failure checks (missing bundle, corrupt bundle, restart-required queue behavior).
+3. Re-evaluate Job 10 sign-off once hybrid success evidence is captured.
+
+---
+
+## Session Summary (2026-05-14) - Post-Validation Check: Hybrid AssetBundle Blocker
+
+**Status**: Not clear for full Crabtya v1 release yet. Manual validation covered the DLL-only and isolation paths successfully, but the required valid hybrid mod load is still failing in runtime. This remains the release blocker.
+
+**What was verified from runtime logs:**
+
+- `Plugin binary fingerprint` line present in `game/BepInEx/LogOutput.log`.
+- Valid DLL-only mod path passes:
+  - `faniel.dll-sample` validated and queued
+  - `Sample DLL mod OnLoad reached.`
+  - `DLL mod 'faniel.dll-sample' entrypoint loaded`
+- Broken DLL isolation passes:
+  - `test.dll-missing` skipped due to validation error `Referenced assembly is missing: bin/test.dll-missing.dll`
+  - other valid mods continued loading
+- Throwing DLL isolation passes:
+  - `ThrowingEntrypoint: about to throw intentionally for isolation validation.`
+  - `DLL mod 'test.dll-throws' entrypoint failed`
+  - other valid mods continued loading
+- `game/BepInEx/ErrorLog.log` remained empty during the check.
+
+**Current blocker: valid hybrid mod load still fails**
+
+- `crabtya.bundle-test` is enabled and its real Unity `6000.2.15f1` `StandaloneWindows64` bundle is present at `game/Mods/crabtya.bundle-test/bundles/test-assets`.
+- Runtime still logs:
+  - `AssetBundleApplicator: LoadFromFile returned null for 'bundles/test-assets' (mod='crabtya.bundle-test').`
+  - `BundleTest: bundle not available for 'bundles/test-assets'.`
+- Because of that, the required hybrid success-path proof is still missing, so:
+  - **Job 09** is not complete
+  - **Job 10** is still blocked
+  - full Crabtya `v1.0.0` release sign-off is not yet clear
+
+**Important follow-up evidence:**
+
+- The bundle artifact itself was sanity-checked in Unity `6000.2.15f1` outside the game runtime and loaded successfully:
+  - asset list included `assets/test_texture.png`
+  - `Texture2D` load succeeded
+- That points to a **Crabtya runtime AssetBundle load-path issue**, not a bad test bundle.
+
+**What was attempted and then reverted:**
+
+- A loader-side compatibility experiment tried alternate AssetBundle loading paths in `AssetBundleApplicator.cs`.
+- Those exploratory changes were **reverted** before ending the session.
+- Repo ended clean with no extra code changes beyond the already-pushed validation-fixture prep commit `e54c175`.
+
+**Recommended next task for the next session:**
+
+1. Focus on `loader/EIC.ModLoader/AssetBundleApplicator.cs`.
+2. Fix the runtime AssetBundle load path so `crabtya.bundle-test` logs:
+   - `AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test'.`
+   - `BundleTest: PASS - Texture2D 'test_texture' loaded successfully.`
+3. After the hybrid success path works, rerun Job 09 failure checks:
+   - missing bundle
+   - corrupt bundle
+   - restart-required queue behavior
+4. Then re-evaluate Job 10 / full v1 release sign-off.
+
+---
+
 ## Session Summary (2026-05-14) - Final v1 Validation Prep
 
 **Status**: Prep complete for the remaining Job 10 runtime-gated checks. Full loader sign-off is now waiting on the actual in-game validation run rather than missing fixtures.

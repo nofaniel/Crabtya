@@ -80,7 +80,7 @@ public static class AssetBundleApplicator
                 }
 
                 var normalized = relativePath.Replace('/', Path.DirectorySeparatorChar);
-                var resolvedPath = Path.Combine(entry.DirectoryPath, normalized);
+                var resolvedPath = Path.GetFullPath(Path.Combine(entry.DirectoryPath, normalized));
                 if (!File.Exists(resolvedPath))
                 {
                     log.LogWarning(
@@ -92,14 +92,15 @@ public static class AssetBundleApplicator
 
                 try
                 {
-                    var bundle = AssetBundle.LoadFromFile(resolvedPath);
+                    var bundle = TryLoadBundle(resolvedPath, modId, relativePath, log);
                     _loaded[key] = bundle;
 
                     if (bundle is null)
                     {
+                        var diagnostics = BuildBundleDiagnostics(resolvedPath);
                         log.LogWarning(
                             $"AssetBundleApplicator: LoadFromFile returned null for '{relativePath}' (mod='{modId}'). " +
-                            $"The bundle may have been built with a different Unity version ({TargetUnityVersion}).");
+                            $"The bundle may have been built with a different Unity version ({TargetUnityVersion}). {diagnostics}");
                         erroredCount++;
                     }
                     else
@@ -159,6 +160,104 @@ public static class AssetBundleApplicator
         return _loaded.TryGetValue(key, out var bundle) ? bundle : null;
     }
 
+    private static AssetBundle? TryLoadBundle(
+        string resolvedPath,
+        string modId,
+        string relativePath,
+        ManualLogSource log)
+    {
+        // Attempt 1: stream load via Il2CppSystem.IO.MemoryStream — confirmed working on this
+        // Unity 6000.2.15f1 IL2CPP build. Passes an IL2CPP object pointer to the native side,
+        // which avoids the string→ReadOnlySpan<char> GetPinnableReference interop gap that
+        // causes LoadFromFile to throw on this build.
+        try
+        {
+            var bytes = File.ReadAllBytes(resolvedPath);
+            var ms = new Il2CppSystem.IO.MemoryStream(bytes);
+            var bundle = AssetBundle.LoadFromStream(ms);
+            if (bundle is not null)
+            {
+                log.LogInfo(
+                    $"AssetBundleApplicator: loaded bundle '{relativePath}' for mod '{modId}' via LoadFromStream.");
+                return bundle;
+            }
+
+            log.LogWarning(
+                $"AssetBundleApplicator: LoadFromStream returned null for '{relativePath}' (mod='{modId}').");
+        }
+        catch (Exception ex)
+        {
+            log.LogWarning(
+                $"AssetBundleApplicator: LoadFromStream threw for '{relativePath}' (mod='{modId}'): {ex.Message}");
+        }
+
+        // Attempt 2: memory load — passes byte[] to LoadFromMemory; avoids the file-path span
+        // issue but the implicit byte[]→Il2CppStructArray conversion can be GC'd mid-call on
+        // some builds ("Object was garbage collected in IL2CPP domain").
+        try
+        {
+            var bytes = File.ReadAllBytes(resolvedPath);
+            var bundle = AssetBundle.LoadFromMemory(bytes);
+            if (bundle is not null)
+            {
+                log.LogInfo(
+                    $"AssetBundleApplicator: loaded bundle '{relativePath}' for mod '{modId}' via LoadFromMemory.");
+                return bundle;
+            }
+
+            log.LogWarning(
+                $"AssetBundleApplicator: LoadFromMemory returned null for '{relativePath}' (mod='{modId}').");
+        }
+        catch (Exception ex)
+        {
+            log.LogWarning(
+                $"AssetBundleApplicator: LoadFromMemory threw for '{relativePath}' (mod='{modId}'): {ex.Message}");
+        }
+
+        // Attempts 3 & 4: path-based fallbacks (known to throw GetPinnableReference on this
+        // build, kept for diagnostic completeness so the log always shows which path failed).
+        AssetBundle? pathBundle;
+        try
+        {
+            pathBundle = AssetBundle.LoadFromFile(resolvedPath);
+        }
+        catch (Exception ex)
+        {
+            log.LogWarning(
+                $"AssetBundleApplicator: primary LoadFromFile threw for '{relativePath}' (mod='{modId}'): {ex.Message}");
+            pathBundle = null;
+        }
+
+        if (pathBundle is not null)
+        {
+            return pathBundle;
+        }
+
+        var normalizedFullPath = resolvedPath.Replace('\\', '/');
+        if (!string.Equals(normalizedFullPath, resolvedPath, StringComparison.Ordinal))
+        {
+            try
+            {
+                pathBundle = AssetBundle.LoadFromFile(normalizedFullPath);
+            }
+            catch (Exception ex)
+            {
+                log.LogWarning(
+                    $"AssetBundleApplicator: separator-normalized LoadFromFile threw for '{relativePath}' (mod='{modId}'): {ex.Message}");
+                pathBundle = null;
+            }
+
+            if (pathBundle is not null)
+            {
+                log.LogInfo(
+                    $"AssetBundleApplicator: loaded bundle '{relativePath}' for mod '{modId}' using normalized path separators.");
+                return pathBundle;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Returns all bundles loaded for a given mod, in declaration order.
     /// </summary>
@@ -182,6 +281,41 @@ public static class AssetBundleApplicator
             .Replace('\\', '/')
             .Trim();
         return $"{modId}:{normalized}";
+    }
+
+    private static string BuildBundleDiagnostics(string resolvedPath)
+    {
+        try
+        {
+            var info = new FileInfo(resolvedPath);
+            var header = TryReadAsciiHeader(resolvedPath, 32);
+            return $"Path='{resolvedPath}', SizeBytes={info.Length}, Header='{header}'";
+        }
+        catch (Exception ex)
+        {
+            return $"Path='{resolvedPath}', SizeBytes=<unavailable:{ex.GetType().Name}>";
+        }
+    }
+
+    private static string TryReadAsciiHeader(string path, int byteCount)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            var buffer = new byte[Math.Max(1, byteCount)];
+            var read = stream.Read(buffer, 0, buffer.Length);
+            if (read <= 0)
+            {
+                return "<empty>";
+            }
+
+            var text = System.Text.Encoding.ASCII.GetString(buffer, 0, read);
+            return text.Replace("\0", string.Empty).Trim();
+        }
+        catch (Exception ex)
+        {
+            return $"<unavailable:{ex.GetType().Name}>";
+        }
     }
 
     private const string TargetUnityVersion = "6000.2.15f1";

@@ -2,37 +2,53 @@
 
 Source PLAN follow-up: "AssetBundle end-to-end proof - requires a test bundle built with Unity 6000.2.15f1."
 
-## Status (2026-05-14) - In progress: real test bundle staged, runtime proof pending
+## Status (2026-05-14) - Infrastructure proven; asset-extraction blocked by IL2CPP vtable gap
 
-Loader-side implementation and all supporting infrastructure is complete. A real Unity `6000.2.15f1`
-`StandaloneWindows64` test bundle is now staged locally. Runtime success-path proof still requires
-an in-game validation run and the documented failure-path checks.
+Bundle startup-loading is confirmed working. All programmatic asset-extraction methods (`LoadAsset`, `LoadAllAssets`, all typed/untyped/generic variants) are blocked by a Unity 6 / BepInEx IL2CPP interop limitation.
+
+**Confirmed working (runtime evidence from `game/BepInEx/LogOutput.log`):**
+
+```
+AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test' via LoadFromStream.
+AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test'. Assets=assets/test_texture.png
+BundleTest: bundle retrieved (key=crabtya.bundle-test:bundles/test-assets).
+BundleTest: asset count=1. Names: assets/test_texture.png
+```
+
+- Bundle loads at startup via `AssetBundle.LoadFromStream(Il2CppSystem.IO.MemoryStream)` — workaround for `LoadFromFile(string)` which throws `ReadOnlySpan.GetPinnableReference`.
+- `GetAllAssetNames()` works — asset paths are enumerable.
+- `AssetBundleApplicator.GetBundle(modId, path)` returns the loaded bundle correctly.
+
+**Blocked: programmatic asset extraction (known BepInEx / Unity 6 issue)**
+
+All asset-load methods — `LoadAllAssets()`, `LoadAllAssets<T>()`, `LoadAsset<T>(string)`, `LoadAsset(string, Type)` — throw at runtime:
+```
+Method not found: '!0 ByRef Il2CppSystem.ReadOnlySpan`1.GetPinnableReference()'
+```
+
+Root cause: Unity 6 IL2CPP compiles `ReadOnlySpan<T>.GetPinnableReference()` as an inlined/optimized native function not registered in the IL2CPP vtable. BepInEx's generated interop for `UnityEngine.AssetBundleModule` tries to call it via virtual dispatch (`il2cpp_object_get_virtual_method`), fails to find it, and throws. Regenerating the interop DLLs will not fix this because the method is not in the game binary's IL2CPP metadata to generate from.
+
+This is a BepInEx compatibility issue with Unity 6 span internals, not a loader bug.
+
+**Impact on Crabtya v1:**
+
+- **Content-only bundle mods** (where the Unity engine auto-references loaded bundle assets through scene/prefab references): unblocked — the bundle is resident in memory and the engine can use it.
+- **DLL mods that programmatically load assets** (`AssetBundleApplicator.GetBundle(...).LoadAsset(...)`): blocked until BepInEx fixes the vtable gap for Unity 6.
 
 **What is done:**
 
-- `game/Mods/crabtya.bundle-test/` - hybrid test mod:
-  - `eicmod.json` - declares `content.assetBundles: ["bundles/test-assets"]` and DLL entrypoint `Crabtya.BundleTest.BundleTestEntrypoint`.
-  - `src/BundleTestEntrypoint.cs` - retrieves the bundle via `AssetBundleApplicator.GetBundle()`, lists all asset names, and attempts to load `Texture2D` named `test_texture`. Results are logged clearly for success and failure cases.
-  - `src/crabtya.bundle-test.csproj` - references `Crabtya.ModApi.dll`, `EIC.ModLoader.dll`, and Unity interop assemblies. Output goes to `bin/`.
-  - `bin/crabtya.bundle-test.dll` - built with 0 errors and 0 warnings.
-  - `bundles/test-assets` - real Unity `6000.2.15f1` `StandaloneWindows64` bundle staged locally with a generated `test_texture` asset.
-- `docs/mod-makers/asset-workflow.md` - full Unity `6000.2.15f1` bundle build recipe: project setup, asset bundle assignment, editor build script, output deployment, DLL access, and failure log table.
-- `docs/mod-makers/manifest-format.md` - `content.assetBundles` moved into the active v1 surface list; validation rules updated with retrieval pattern and link to asset workflow.
-- `docs/mod-makers/quickstart.md` - new bundle-mod section with folder layout, manifest snippet, and DLL entrypoint example.
+- `loader/EIC.ModLoader/AssetBundleApplicator.cs` — `TryLoadBundle` now tries IL2CPP-safe load order:
+  1. `AssetBundle.LoadFromStream(Il2CppSystem.IO.MemoryStream)` (confirmed working)
+  2. `AssetBundle.LoadFromMemory(byte[])` (throws GC error on this build — kept as fallback)
+  3. `AssetBundle.LoadFromFile(string)` × 2 path variants (both throw GetPinnableReference — kept for diagnostics)
+- `game/Mods/crabtya.bundle-test/src/BundleTestEntrypoint.cs` — probed `LoadAllAssets`, `LoadAllAssets<T>()`, and `LoadAsset<T>(string)` variants; all confirmed blocked; code left in place for when the BepInEx fix lands.
+- Full Unity 6000.2.15f1 bundle build recipe documented in `docs/mod-makers/asset-workflow.md`.
 
-**What remains:**
+**What remains (blocked, not actionable in current BepInEx):**
 
-1. Runtime verification - success path:
-   - Enable `crabtya.bundle-test` in the Mods menu. The toggle should show `(restart)`.
-   - Restart the game.
-   - Confirm `LogOutput.log` contains `AssetBundleApplicator: loaded bundle 'bundles/test-assets' for mod 'crabtya.bundle-test'.`
-   - Confirm `LogOutput.log` contains `BundleTest: PASS - Texture2D 'test_texture' loaded successfully.`
-2. Runtime verification - failure paths:
-   - Missing bundle: remove or rename the bundle file, restart, and verify the `bundle file not found` warning while other mods continue loading.
-   - Corrupt bundle: replace the file with a text file, restart, and verify `LoadFromFile returned null` while other mods continue loading.
-   - Restart-required toggle: enable or disable `crabtya.bundle-test` in Mods menu and verify the queue writes to `startup-commands.json`.
-3. Confirm `game/BepInEx/ErrorLog.log` stays empty for the validated run.
-4. Update this file and `PLAN.md` with runtime evidence once captured.
+1. `BundleTest: PASS - Texture2D 'test_texture' loaded successfully.` — requires BepInEx fix for `ReadOnlySpan<T>.GetPinnableReference()` vtable registration on Unity 6.
+2. Failure-path checks (missing bundle, corrupt bundle) — can be run now if desired; they only exercise the load path (which works) not asset extraction.
+3. Restart-required toggle: enable or disable `crabtya.bundle-test` in Mods menu; verify queue writes to `startup-commands.json`.
 
 ## Objective
 

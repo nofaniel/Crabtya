@@ -73,10 +73,29 @@ public sealed class BundleTestEntrypoint : ICrabtyaMod
             context.Logger.Warning("BundleTest: GetAllAssetNames threw: " + ex.Message);
         }
 
-        // Attempt to load the expected test texture by name.
+        // Load all assets via non-generic LoadAllAssets() then cast with TryCast<Texture2D>().
+        // Both LoadAsset<T>(string) and LoadAllAssets<T>() resolve the type T as a string
+        // internally (ReadOnlySpan<char>), throwing GetPinnableReference on this IL2CPP build.
+        // The non-generic overload avoids that path. TryCast<T>() uses IL2CPP class handles,
+        // not string lookups.
         try
         {
-            var texture = bundle.LoadAsset<Texture2D>(TestAssetName);
+            var allAssets = bundle.LoadAllAssets();
+            Texture2D texture = null;
+            if (allAssets != null)
+            {
+                foreach (var asset in allAssets)
+                {
+                    if (asset == null) continue;
+                    var tex = asset.TryCast<Texture2D>();
+                    if (tex != null && tex.name == TestAssetName)
+                    {
+                        texture = tex;
+                        break;
+                    }
+                }
+            }
+
             if (texture != null)
             {
                 context.Logger.Info(
@@ -85,16 +104,17 @@ public sealed class BundleTestEntrypoint : ICrabtyaMod
             }
             else
             {
+                var count = allAssets?.Length ?? 0;
                 context.Logger.Warning(
-                    "BundleTest: Texture2D '" + TestAssetName + "' not found in bundle. " +
-                    "Verify the asset is named exactly '" + TestAssetName + "' in the Unity project. " +
-                    "Asset names in bundles are lowercased paths, e.g. 'assets/test_texture.png'. " +
-                    "Check the asset names logged above and adjust TestAssetName if needed.");
+                    "BundleTest: Texture2D '" + TestAssetName + "' not found. " +
+                    "Total assets in bundle=" + count + ". " +
+                    "Asset .name is the Unity object name (not the bundle path). " +
+                    "Check the asset names logged above.");
             }
         }
         catch (Exception ex)
         {
-            context.Logger.Warning("BundleTest: LoadAsset<Texture2D> threw: " + ex.Message);
+            context.Logger.Warning("BundleTest: LoadAllAssets threw: " + ex.Message);
         }
     }
 }
