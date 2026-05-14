@@ -1,0 +1,23 @@
+{
+  "id": "test.dll-missing",
+  "name": "Test Missing DLL",
+  "version": "1.0.0",
+  "author": "Crabtya",
+  "description": "Validation fixture for DLL-load isolation. Intentionally references a missing assembly file.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": []
+  },
+  "assemblies": [
+    "bin/test.dll-missing.dll"
+  ],
+  "entrypoints": [
+    "Crabtya.TestMissingDll.MissingDllEntrypoint"
+  ],
+  "defaultEnabled": false
+}

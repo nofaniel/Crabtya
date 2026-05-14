@@ -1,0 +1,23 @@
+{
+  "id": "test.dll-throws",
+  "name": "Test Throwing DLL",
+  "version": "1.0.0",
+  "author": "Crabtya",
+  "description": "Validation fixture for DLL-entrypoint isolation. Throws intentionally during OnLoad.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": [],
+    "definitions": []
+  },
+  "assemblies": [
+    "bin/test.dll-throws.dll"
+  ],
+  "entrypoints": [
+    "Crabtya.TestThrowingDll.ThrowingEntrypoint"
+  ],
+  "defaultEnabled": false
+}

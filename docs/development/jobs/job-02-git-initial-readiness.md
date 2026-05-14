@@ -49,7 +49,7 @@ Use the finalized logo image files at repo root (`logo-L.png`, `logo-M.png`, `lo
 
 ## Status
 
-Done (2026-05-13).
+Done (2026-05-14).
 
 - `.gitignore` created: excludes game binaries, BepInEx runtime, doorstop install, runtime state, build outputs, draft brand assets, `opencode.json`, IDE files.
 - `.gitattributes` created: `* text=auto eol=lf`; binary markers for `*.png`, `*.dll`, `*.zip`, `*.pdb`.
@@ -57,4 +57,5 @@ Done (2026-05-13).
 - `packages/README.md` updated with artifact descriptions, install instructions, fingerprint verification, and regeneration command.
 - `git init` completed; initial commit `60c04e4` — 142 files, 20916 insertions.
 - Remote `origin` configured: `https://github.com/nofaniel/Crabtya.git`.
-- Push to remote pending user instruction (repository may not yet exist on GitHub).
+- `master` pushed to `origin` at `cf378d5`.
+- Repository publication/setup is complete; remaining GitHub-side work is release-page/tag publishing and later optional GitHub Pages polish.

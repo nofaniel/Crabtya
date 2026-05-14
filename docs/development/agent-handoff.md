@@ -1,5 +1,68 @@
 # Agent Handoff
 
+## Session Summary (2026-05-14) - Final v1 Validation Prep
+
+**Status**: Prep complete for the remaining Job 10 runtime-gated checks. Full loader sign-off is now waiting on the actual in-game validation run rather than missing fixtures.
+
+**What changed:**
+
+- Built a real Unity `6000.2.15f1` `StandaloneWindows64` AssetBundle for Job 09 and staged it at `game/Mods/crabtya.bundle-test/bundles/test-assets`.
+- Added DLL validation fixtures:
+  - `game/Mods/test.dll-missing/eicmod.json` - intentional missing-assembly manifest for broken-mod isolation
+  - `game/Mods/test.dll-throws/` - intentional throwing `OnLoad` fixture, source included and local DLL built for runtime validation
+- Added `docs/development/v1-signoff-runbook.md` with the exact two-launch validation sequence and expected evidence.
+- Updated Job 09 notes to reflect that the real bundle is now staged locally.
+- Added `game/Mods/validation-backup-*/` to `.gitignore` so local evidence backups stay out of source control.
+
+**Runtime state prep already done:**
+
+- `dotnet build loader/EIC.ModLoader/EIC.ModLoader.csproj -c Release` succeeds.
+- `game/BepInEx/LogOutput.log` and `game/BepInEx/ErrorLog.log` were cleared before this validation prep.
+- Prior runtime evidence/state was backed up under `game/Mods/validation-backup-20260514-102507/`.
+
+**What remains:**
+
+- Run the in-game sign-off flow in `docs/development/v1-signoff-runbook.md`.
+- Capture the remaining DLL-only, hybrid, broken-DLL, throwing-entrypoint, and restart-queue evidence.
+- If those pass, mark Job 10 complete and publish the full Crabtya `v1.0.0` loader release.
+
+---
+
+## Session Summary (2026-05-14) - Mod Release Publication + Repo Status Alignment
+
+**Status**: Complete for the requested content-only mod releases. Repo/docs alignment updated for current GitHub state; full Crabtya loader `v1.0.0` remains runtime-gated under Job 10.
+
+**What changed:**
+
+- `PLAN.md` updated so Job 02 reflects reality: `master` is already pushed to `origin` at `cf378d5`; remaining publication work is release-page/tag publishing, not repo initialization.
+- `docs/development/jobs/job-02-git-initial-readiness.md` updated to record that GitHub repo setup is complete and only release-page/later GitHub Pages polish remains.
+- `README.md` gained a short post-v1 `Crabtya Lite` section describing the separate curated QoL package direction and stating that GitHub Pages is later polish, not part of the immediate v1 release gate.
+- Published four GitHub releases under `nofaniel/Crabtya` with attached packaged zips and install notes:
+  - `faniel.fov-slider-v1.0.0` — Gameplay FOV Slider v1.0.0
+  - `faniel.mousewheel-zoom-v1.0.0` — Mouse Wheel Zoom v1.0.0
+  - `faniel.no-intro-v1.0.0` — No Intro v1.0.0
+  - `faniel.ui-scale-v1.0.0` — UI Scale Settings v1.0.0
+- Each release note states:
+  - requires Crabtya `v1.x`
+  - extract into `game/Mods/` so `game/Mods/<mod-id>/eicmod.json` exists
+  - content-only mod
+- Full loader release gating remains unchanged:
+  - **Job 10** stays `In progress` until the remaining DLL/hybrid/broken-mod/startup-command runtime checks are captured.
+  - **Job 09** stays pending runtime proof until a Unity 6000.2.15f1 AssetBundle test file is supplied and verified.
+
+**Repo / GitHub reality check:**
+
+- `git status --short --branch` reports `## master...origin/master`
+- `gh auth status` shows authenticated GitHub CLI access.
+- `gh release list --repo nofaniel/Crabtya` returned no existing releases at the start of this pass, then showed the four newly published releases afterward.
+- GitHub still marked the newest published mod release as `Latest` even after creation with `--latest=false` and a follow-up REST patch with `make_latest=false`; treat that as current GitHub behavior/quirk unless a different release strategy is chosen later.
+
+**Immediate next action:**
+
+- Finish the remaining Job 10 runtime-gated sign-off items before publishing the main full Crabtya loader `v1.0.0` release.
+
+---
+
 ## Session Summary (2026-05-13) - Job 02 Git Publication
 
 **Status**: Complete. Repository initialized, initial commit made, remote configured.
@@ -17,8 +80,7 @@
 
 **What remains:**
 
-- Push to remote is pending user instruction. The GitHub repository `https://github.com/nofaniel/Crabtya.git` may need to be created before pushing.
-- When ready: `git push -u origin master`
+- Historical note only: this section predates the 2026-05-14 push confirmation. `master` is now pushed to `origin`; current publication work is release-page/tag creation rather than repo initialization.
 
 ---
 

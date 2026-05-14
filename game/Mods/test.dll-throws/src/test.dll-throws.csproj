@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>test.dll-throws</AssemblyName>
+    <RootNamespace>Crabtya.TestThrowingDll</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\loader\Crabtya.ModApi\Crabtya.ModApi.csproj" />
+  </ItemGroup>
+
+  <Target Name="DeployBuiltDll" AfterTargets="Build">
+    <MakeDir Directories="..\bin" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="..\bin\test.dll-throws.dll" />
+  </Target>
+</Project>

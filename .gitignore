@@ -35,6 +35,7 @@ game/__LAUNCHER.bat
 game/Mods/mod-state.json
 game/Mods/startup-commands.json
 game/Mods/runtime-settings.json
+game/Mods/validation-backup-*/
 game/CrabtyaData/
 
 # ─── .NET build outputs ────────────────────────────────────────────────────────

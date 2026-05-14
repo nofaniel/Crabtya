@@ -166,3 +166,12 @@ See [`.gitignore`](.gitignore). In particular:
 ## Repo Status
 
 Crabtya v1 is feature-complete. See [`PLAN.md`](PLAN.md) for current job status and release gating.
+
+## Post-v1: Crabtya Lite
+
+Crabtya Lite is planned as a separate post-v1 product for players who want a curated QoL package without arbitrary mod loading.
+
+- Lite is intended to cover built-in FOV, mouse-wheel zoom, invert scroll, and No Intro behavior on the main game install.
+- Lite is not a runtime mode flag for full Crabtya; it should ship as its own package and release choice.
+- Users should choose either full Crabtya or Crabtya Lite from Releases unless compatibility is explicitly tested and documented.
+- A GitHub Pages site is later polish, not part of the immediate Crabtya v1 release work.
