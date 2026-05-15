@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Reflection;
 using BepInEx.Logging;
 using Crabtya.ModApi;
+using UnityEngine;
 
 namespace EIC.ModLoader;
 
@@ -127,16 +129,21 @@ public static class DllModLoader
                     }
 
                     var instance = (ICrabtyaMod)Activator.CreateInstance(type)!;
+                    var effectiveModId = entry.Manifest.Id ?? modId;
+                    var effectiveModName = entry.Manifest.Name ?? modId;
+                    var effectiveModVersion = entry.Manifest.Version ?? "unknown";
+                    var modLogger = new CrabtyaModLogger(log, modId);
                     var context = new CrabtyaModContext(
-                        entry.Manifest.Id ?? modId,
-                        entry.Manifest.Name ?? modId,
-                        entry.Manifest.Version ?? "unknown",
+                        effectiveModId,
+                        effectiveModName,
+                        effectiveModVersion,
                         entry.DirectoryPath,
-                        new CrabtyaModLogger(log, modId),
+                        modLogger,
                         CrabtyaSettingsRegistry.CreateForMod(
-                            entry.Manifest.Id ?? modId,
-                            entry.Manifest.Name ?? modId,
-                            entry.Manifest.Version ?? "unknown"));
+                            effectiveModId,
+                            effectiveModName,
+                            effectiveModVersion),
+                        new CrabtyaAssetBundleRegistry(effectiveModId, modLogger));
 
                     instance.OnLoad(context);
                     loadedEntrypointsThisMod++;
@@ -326,7 +333,8 @@ public sealed class CrabtyaModContext : ICrabtyaModContext
         string modVersion,
         string modDirectory,
         ICrabtyaLogger logger,
-        ICrabtyaSettingsRegistry settings)
+        ICrabtyaSettingsRegistry settings,
+        ICrabtyaAssetBundleRegistry assetBundles)
     {
         ModId = modId;
         ModName = modName;
@@ -334,6 +342,7 @@ public sealed class CrabtyaModContext : ICrabtyaModContext
         ModDirectory = modDirectory;
         Logger = logger;
         Settings = settings;
+        AssetBundles = assetBundles;
     }
 
     public string ModId { get; }
@@ -347,4 +356,151 @@ public sealed class CrabtyaModContext : ICrabtyaModContext
     public ICrabtyaLogger Logger { get; }
 
     public ICrabtyaSettingsRegistry Settings { get; }
+
+    public ICrabtyaAssetBundleRegistry AssetBundles { get; }
+}
+
+public sealed class CrabtyaAssetBundleRegistry : ICrabtyaAssetBundleRegistry
+{
+    private static readonly MethodInfo LoadAssetCompatGenericDefinition =
+        typeof(AssetBundleApplicator)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(m =>
+                m.Name == nameof(AssetBundleApplicator.LoadAssetCompat) &&
+                m.IsGenericMethodDefinition &&
+                m.GetParameters().Length == 2);
+
+    private static readonly MethodInfo LoadAllAssetsCompatGenericDefinition =
+        typeof(AssetBundleApplicator)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(m =>
+                m.Name == nameof(AssetBundleApplicator.LoadAllAssetsCompat) &&
+                m.IsGenericMethodDefinition &&
+                m.GetParameters().Length == 1);
+
+    private readonly string _modId;
+    private readonly ICrabtyaLogger _logger;
+
+    public CrabtyaAssetBundleRegistry(string modId, ICrabtyaLogger logger)
+    {
+        _modId = modId;
+        _logger = logger;
+    }
+
+    public object? GetBundle(string relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            return null;
+        }
+
+        return AssetBundleApplicator.GetBundle(_modId, relativePath);
+    }
+
+    public bool TryGetBundle(string relativePath, out object? bundle)
+    {
+        bundle = GetBundle(relativePath);
+        return bundle is not null;
+    }
+
+    public IReadOnlyList<string> GetAssetNames(string relativePath)
+    {
+        var bundle = GetBundle(relativePath) as AssetBundle;
+        if (bundle is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        try
+        {
+            var names = bundle.GetAllAssetNames();
+            return names is null || names.Length == 0
+                ? Array.Empty<string>()
+                : names.ToArray();
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning($"AssetBundles.GetAssetNames failed for '{relativePath}': {ex.Message}");
+            return Array.Empty<string>();
+        }
+    }
+
+    public TAsset? LoadAsset<TAsset>(string relativePath, string assetPath)
+        where TAsset : class
+    {
+        var bundle = GetBundle(relativePath) as AssetBundle;
+        if (bundle is null || string.IsNullOrWhiteSpace(assetPath))
+        {
+            return null;
+        }
+
+        var assetType = typeof(TAsset);
+        if (!typeof(UnityEngine.Object).IsAssignableFrom(assetType))
+        {
+            _logger.Warning(
+                $"AssetBundles.LoadAsset<{assetType.FullName}> requested a non-Unity asset type. Returning null.");
+            return null;
+        }
+
+        try
+        {
+            var method = LoadAssetCompatGenericDefinition.MakeGenericMethod(assetType);
+            return method.Invoke(null, new object[] { bundle, assetPath }) as TAsset;
+        }
+        catch (Exception ex)
+        {
+            var message = ex is TargetInvocationException tie && tie.InnerException is not null
+                ? tie.InnerException.Message
+                : ex.Message;
+            _logger.Warning($"AssetBundles.LoadAsset failed for '{relativePath}'/'{assetPath}': {message}");
+            return null;
+        }
+    }
+
+    public IReadOnlyList<TAsset> LoadAllAssets<TAsset>(string relativePath)
+        where TAsset : class
+    {
+        var bundle = GetBundle(relativePath) as AssetBundle;
+        if (bundle is null)
+        {
+            return Array.Empty<TAsset>();
+        }
+
+        var assetType = typeof(TAsset);
+        if (!typeof(UnityEngine.Object).IsAssignableFrom(assetType))
+        {
+            _logger.Warning(
+                $"AssetBundles.LoadAllAssets<{assetType.FullName}> requested a non-Unity asset type. Returning empty list.");
+            return Array.Empty<TAsset>();
+        }
+
+        try
+        {
+            var method = LoadAllAssetsCompatGenericDefinition.MakeGenericMethod(assetType);
+            var raw = method.Invoke(null, new object[] { bundle }) as IEnumerable;
+            if (raw is null)
+            {
+                return Array.Empty<TAsset>();
+            }
+
+            var assets = new List<TAsset>();
+            foreach (var item in raw)
+            {
+                if (item is TAsset asset)
+                {
+                    assets.Add(asset);
+                }
+            }
+
+            return assets;
+        }
+        catch (Exception ex)
+        {
+            var message = ex is TargetInvocationException tie && tie.InnerException is not null
+                ? tie.InnerException.Message
+                : ex.Message;
+            _logger.Warning($"AssetBundles.LoadAllAssets failed for '{relativePath}': {message}");
+            return Array.Empty<TAsset>();
+        }
+    }
 }

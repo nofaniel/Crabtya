@@ -1,5 +1,8 @@
 using BepInEx.Logging;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using UnityEngine;
+using UnityEngine.Bindings;
 
 namespace EIC.ModLoader;
 
@@ -160,6 +163,135 @@ public static class AssetBundleApplicator
         return _loaded.TryGetValue(key, out var bundle) ? bundle : null;
     }
 
+    /// <summary>
+    /// Compatibility shim for Unity 6 + BepInEx IL2CPP builds where
+    /// <see cref="AssetBundle.LoadAsset(string, Il2CppSystem.Type)"/> throws due to
+    /// ReadOnlySpan marshalling in generated interop wrappers.
+    /// </summary>
+    public static UnityEngine.Object? LoadAssetCompat(
+        AssetBundle bundle,
+        string assetName,
+        Il2CppSystem.Type assetType)
+    {
+        if (bundle is null || string.IsNullOrWhiteSpace(assetName) || assetType is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            // AssetBundle injected iCalls expect Unity's marshalled object pointer, not the
+            // raw IL2CPP wrapper-object pointer.
+            var bundlePtr = UnityEngine.Object.MarshalledUnityObject.MarshalNotNull(bundle);
+            if (bundlePtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            unsafe
+            {
+                fixed (char* assetNamePtr = assetName)
+                {
+                    var nameSpan = new ManagedSpanWrapper(assetNamePtr, assetName.Length);
+                    var loadedPtr = AssetBundle.LoadAsset_Internal_Injected(bundlePtr, ref nameSpan, assetType);
+                    return loadedPtr == IntPtr.Zero
+                        ? null
+                        : Unmarshal.UnmarshalUnityObject<UnityEngine.Object>(loadedPtr);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _log?.LogWarning($"AssetBundleApplicator: LoadAssetCompat threw for '{assetName}': {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Typed convenience wrapper around <see cref="LoadAssetCompat(AssetBundle, string, Il2CppSystem.Type)"/>.
+    /// </summary>
+    public static T? LoadAssetCompat<T>(AssetBundle bundle, string assetName)
+        where T : UnityEngine.Object
+    {
+        var il2CppType = Il2CppSystem.Type.GetTypeFromHandle(
+            RuntimeReflectionHelper.GetRuntimeTypeHandle<T>());
+        var loaded = LoadAssetCompat(bundle, assetName, il2CppType);
+        return loaded?.TryCast<T>();
+    }
+
+    /// <summary>
+    /// Compatibility shim for Unity 6 + BepInEx IL2CPP builds where
+    /// <see cref="AssetBundle.LoadAllAssets()"/> throws due to ReadOnlySpan marshalling
+    /// in generated interop wrappers.
+    /// </summary>
+    public static Il2CppReferenceArray<UnityEngine.Object>? LoadAllAssetsCompat(AssetBundle bundle)
+    {
+        if (bundle is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var bundlePtr = UnityEngine.Object.MarshalledUnityObject.MarshalNotNull(bundle);
+            if (bundlePtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            ManagedSpanWrapper emptyNameSpan = default;
+            if (!StringMarshaller.TryMarshalEmptyOrNullString(string.Empty, ref emptyNameSpan))
+            {
+                _log?.LogWarning("AssetBundleApplicator: failed to marshal empty asset name for LoadAllAssetsCompat.");
+                return null;
+            }
+
+            var objectType = Il2CppSystem.Type.GetTypeFromHandle(
+                RuntimeReflectionHelper.GetRuntimeTypeHandle<UnityEngine.Object>());
+
+            return AssetBundle.LoadAssetWithSubAssets_Internal_Injected(
+                bundlePtr,
+                ref emptyNameSpan,
+                objectType);
+        }
+        catch (Exception ex)
+        {
+            _log?.LogWarning($"AssetBundleApplicator: LoadAllAssetsCompat threw: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Typed compatibility helper that filters <see cref="LoadAllAssetsCompat(AssetBundle)"/>
+    /// results by runtime type.
+    /// </summary>
+    public static IReadOnlyList<T> LoadAllAssetsCompat<T>(AssetBundle bundle)
+        where T : UnityEngine.Object
+    {
+        var loaded = LoadAllAssetsCompat(bundle);
+        if (loaded is null || loaded.Length == 0)
+        {
+            return Array.Empty<T>();
+        }
+
+        var typed = new List<T>(loaded.Length);
+        foreach (var asset in loaded)
+        {
+            if (asset is null)
+            {
+                continue;
+            }
+
+            var cast = asset.TryCast<T>();
+            if (cast is not null)
+            {
+                typed.Add(cast);
+            }
+        }
+
+        return typed;
+    }
+
     private static AssetBundle? TryLoadBundle(
         string resolvedPath,
         string modId,
@@ -191,31 +323,13 @@ public static class AssetBundleApplicator
                 $"AssetBundleApplicator: LoadFromStream threw for '{relativePath}' (mod='{modId}'): {ex.Message}");
         }
 
-        // Attempt 2: memory load — passes byte[] to LoadFromMemory; avoids the file-path span
-        // issue but the implicit byte[]→Il2CppStructArray conversion can be GC'd mid-call on
-        // some builds ("Object was garbage collected in IL2CPP domain").
-        try
-        {
-            var bytes = File.ReadAllBytes(resolvedPath);
-            var bundle = AssetBundle.LoadFromMemory(bytes);
-            if (bundle is not null)
-            {
-                log.LogInfo(
-                    $"AssetBundleApplicator: loaded bundle '{relativePath}' for mod '{modId}' via LoadFromMemory.");
-                return bundle;
-            }
-
-            log.LogWarning(
-                $"AssetBundleApplicator: LoadFromMemory returned null for '{relativePath}' (mod='{modId}').");
-        }
-        catch (Exception ex)
-        {
-            log.LogWarning(
-                $"AssetBundleApplicator: LoadFromMemory threw for '{relativePath}' (mod='{modId}'): {ex.Message}");
-        }
-
-        // Attempts 3 & 4: path-based fallbacks (known to throw GetPinnableReference on this
+        // Attempts 2 & 3: path-based fallbacks (known to throw GetPinnableReference on this
         // build, kept for diagnostic completeness so the log always shows which path failed).
+        //
+        // NOTE: We intentionally do not use LoadFromMemory(byte[]) here. On this runtime,
+        // corrupt bundle payloads can trigger a fatal native AccessViolation in
+        // LoadFromMemory_Internal before managed exception handling can isolate the failure.
+        // Skipping that path preserves mod isolation for bad bundle files.
         AssetBundle? pathBundle;
         try
         {

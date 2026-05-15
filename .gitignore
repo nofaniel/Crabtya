@@ -67,3 +67,6 @@ opencode.json
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# ─── AI / local tooling ────────────────────────────────────────────────────────
+.claude/

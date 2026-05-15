@@ -18,27 +18,9 @@
       <HintPath>..\..\..\BepInEx\plugins\Crabtya.ModApi.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <!-- EIC.ModLoader - provides AssetBundleApplicator.GetBundle(). -->
-    <Reference Include="EIC.ModLoader">
-      <HintPath>..\..\..\BepInEx\plugins\EIC.ModLoader.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <!-- Unity interop assemblies - required for AssetBundle and Texture2D types. -->
+    <!-- Unity interop assembly used by this sample's Texture2D checks. -->
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\..\BepInEx\interop\UnityEngine.AssetBundleModule.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <!-- IL2CPP interop runtime support. -->
-    <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>..\..\..\BepInEx\core\Il2CppInterop.Runtime.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Il2Cppmscorlib">
-      <HintPath>..\..\..\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

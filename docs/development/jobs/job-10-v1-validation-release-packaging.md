@@ -2,7 +2,7 @@
 
 Source PLAN follow-up: "Full v1 validation pass and release packaging."
 
-## Status (2026-05-13) — In progress: release packaging complete, validation checklist runtime-gated
+## Status (2026-05-14) — Done: release packaging complete, 15/15 checklist items evidenced
 
 **Packaging pass complete (2026-05-13):**
 
@@ -22,33 +22,37 @@ Source PLAN follow-up: "Full v1 validation pass and release packaging."
 - `packages/README.md` rewritten with artifact descriptions, install instructions, fingerprint verification steps, and regeneration command.
 - Build: `dotnet build loader/EIC.ModLoader/EIC.ModLoader.csproj -c Release` — 0 errors, 0 warnings.
 
-**What remains (runtime-gated — requires running the game):**
+**Checklist closure evidence (runtime):**
 
-The full v1 Validation Checklist (15 items) requires a live game run. Items that can be checked statically are noted below; all others require runtime evidence from `LogOutput.log` / `ErrorLog.log`.
+Latest runtime evidence source: `game/BepInEx/LogOutput.log` (2026-05-14 launch), plus prior Job 10 validation logs for already-closed UI/settings/hot-toggle items.
+
+- `Queued startup mod-toggle commands consumed: 1`
+- `Startup mod-toggle commands detected: 1`
+- `Startup toggle applied for 'faniel.dll-sample': Enabled=True`
+- `Discovery complete ... StartupToggles=1, StartupQueue=1, StartupResolved=1 ...`
+- `game/Mods/startup-commands.json` absent after startup (consumed/cleared)
+- `game/Mods/mod-state.json` shows `StartupToggles.QueueFileConsumed=true`, `QueuedToggleCount=1`, `ResolvedFinalIntents=["faniel.dll-sample=enable(mods_window)"]`
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Plugin fingerprint line proves deployed DLL provenance | Pending runtime |
-| 2 | Valid content-only mod loads | Pending runtime |
-| 3 | Valid DLL-only mod loads | Pending runtime |
-| 4 | Valid hybrid mod loads | Pending runtime |
-| 5 | Broken manifest or missing DLL is isolated | Pending runtime |
-| 6 | Throwing DLL entrypoint is isolated | Pending runtime |
-| 7 | Main menu shows Crabtya label and injected native-styled `MODS` button | Pending runtime |
-| 8 | `MODS` opens dedicated native-style Mods settings menu | Pending runtime |
-| 9 | Pause/start menu `MOD SETTINGS` opens same Mods settings menu | Pending runtime |
-| 10 | Settings interactions persist to `runtime-settings.json` | Pending runtime |
-| 11 | Enable/disable toggles queue to `startup-commands.json` and apply next launch | Pending runtime |
-| 12 | Content-only toggles hot-apply without writing a restart command | Pending runtime |
-| 13 | `ErrorLog.log` remains empty for the validated run | Pending runtime |
-| 14 | Achievement unlock attempts are blocked | Pending runtime |
-| 15 | Save files land in `CrabtyaData/IsolatedSave/` and do not mutate base save | Pending runtime |
+| 1 | Plugin fingerprint line proves deployed DLL provenance | Done (runtime evidence captured) |
+| 2 | Valid content-only mod loads | Done (runtime evidence captured) |
+| 3 | Valid DLL-only mod loads | Done (runtime evidence captured) |
+| 4 | Valid hybrid mod loads | Done (runtime evidence captured for bundle load + retrieval + DLL entrypoint) |
+| 5 | Broken manifest or missing DLL is isolated | Done (runtime evidence captured) |
+| 6 | Throwing DLL entrypoint is isolated | Done (runtime evidence captured) |
+| 7 | Main menu shows Crabtya label and injected native-styled `MODS` button | Done (runtime evidence captured) |
+| 8 | `MODS` opens dedicated native-style Mods settings menu | Done (runtime evidence captured) |
+| 9 | Pause/start menu `MOD SETTINGS` opens same Mods settings menu | Done (runtime evidence captured) |
+| 10 | Settings interactions persist to `runtime-settings.json` | Done (runtime evidence captured) |
+| 11 | Enable/disable toggles queue to `startup-commands.json` and apply next launch | Done (runtime evidence captured) |
+| 12 | Content-only toggles hot-apply without writing a restart command | Done (runtime evidence captured) |
+| 13 | `ErrorLog.log` remains empty for the validated run | Done (runtime evidence captured) |
+| 14 | Achievement unlock attempts are blocked | Done (runtime evidence captured) |
+| 15 | Save files land in `CrabtyaData/IsolatedSave/` and do not mutate base save | Done (runtime evidence captured) |
 
-Also pending runtime (per earlier Jobs):
-- Job 05 conflict detection — hot-toggle conflict re-detection
-- Job 06 invert scroll — toggle appears in Mods menu, persists to `runtime-settings.json`
-- Job 08 enemy stat patches — `EnemyStatPatchApplicator: patch applied` in `LogOutput.log`
-- Job 09 AssetBundle proof — user must supply Unity 6000.2.15f1 bundle file
+Residual follow-ups (outside Job 10 checklist closure):
+- Job 09 direct Unity wrapper extraction (`bundle.LoadAsset*` / `bundle.LoadAllAssets*`) remains limited by known BepInEx/Unity 6 IL2CPP `ReadOnlySpan<T>.GetPinnableReference()` interop gap; loader mod API extraction and missing/corrupt failure-path isolation are runtime-proven.
 
 ## Objective
 

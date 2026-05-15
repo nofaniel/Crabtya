@@ -118,30 +118,46 @@ The path must be relative to the mod folder and may not contain `..`.
 
 Mods that declare asset bundles are **restart-required** when toggled on or off. The toggle button in the Mods settings menu shows `(restart)` for these mods.
 
-### Step 8 — Access the bundle from a DLL entrypoint
+### Step 8 — Access assets from a DLL entrypoint
 
 In your mod's C# entrypoint (called after the bundle is loaded at startup):
 
 ```csharp
-using EIC.ModLoader;
+using Crabtya.ModApi;
 using UnityEngine;
 
-var bundle = AssetBundleApplicator.GetBundle("author.my-mod", "bundles/my-assets");
-if (bundle != null)
+var bundlePath = "bundles/my-assets";
+if (context.AssetBundles.TryGetBundle(bundlePath, out _))
 {
     // Asset names in bundles are lowercased full paths, e.g. "assets/textures/my_texture.png"
-    var texture = bundle.LoadAsset<Texture2D>("assets/textures/my_texture.png");
+    var texture = context.AssetBundles.LoadAsset<Texture2D>(
+        bundlePath,
+        "assets/textures/my_texture.png");
+
     if (texture != null)
     {
         context.Logger.Info("Texture loaded: " + texture.width + "x" + texture.height);
     }
+
+    // Optional: enumerate all loaded assets first.
+    // var allAssets = context.AssetBundles.LoadAllAssets<Object>(bundlePath);
 }
 ```
 
-> **DLL project references**: to use `AssetBundleApplicator` and `Texture2D`, your `.csproj` must reference:
-> - `game/BepInEx/plugins/EIC.ModLoader.dll`
+`LoadAsset<T>()` and `LoadAllAssets<T>()` are for Unity asset types (`Texture2D`, `AudioClip`, `GameObject`, etc.).
+If `T` is not a Unity asset type, Crabtya logs a warning and returns no result.
+
+> On the current Unity 6000.2.15f1 + BepInEx IL2CPP stack, prefer
+> `context.AssetBundles.LoadAsset<T>()` / `LoadAllAssets<T>()` over direct
+> `bundle.LoadAsset<T>()` / `bundle.LoadAllAssets()` calls.
+> The direct wrappers may throw `ReadOnlySpan<T>.GetPinnableReference()` method-not-found
+> exceptions on this runtime.
+
+> **DLL project references**: to use `ICrabtyaModContext.AssetBundles` and `Texture2D`, your `.csproj` must reference:
+> - `game/BepInEx/plugins/Crabtya.ModApi.dll`
 > - `game/BepInEx/interop/UnityEngine.CoreModule.dll`
-> - `game/BepInEx/interop/UnityEngine.AssetBundleModule.dll`
+>
+> Add extra Unity interop references only for the asset types you directly use.
 
 ### Failure paths and log output
 
@@ -151,10 +167,20 @@ Crabtya logs bundle-load results during startup. Check `game/BepInEx/LogOutput.l
 |---|---|
 | Bundle loaded successfully | `AssetBundleApplicator: loaded bundle 'bundles/my-assets' for mod 'author.my-mod'. Assets=…` |
 | Bundle file not found | `AssetBundleApplicator: bundle file not found: '…' (mod='…', declared='bundles/my-assets').` |
-| Wrong Unity version | `AssetBundleApplicator: LoadFromFile returned null for '…'. The bundle may have been built with a different Unity version (6000.2.15f1).` |
+| Wrong Unity version or incompatible bundle | `AssetBundleApplicator: LoadFromFile returned null for '…'. The bundle may have been built with a different Unity version (6000.2.15f1).` |
 | Exception during load | `AssetBundleApplicator: exception loading bundle '…' for mod '…': …` |
 
 Failed bundle loads are isolated: other mods continue loading normally.
+
+### Troubleshooting quick table
+
+| Symptom | Likely cause | What to do |
+|---|---|---|
+| `TryGetBundle("bundles/my-assets")` is `false` | Manifest path mismatch, mod disabled, or mod failed validation | Confirm `content.assetBundles` path matches exactly, then check `game/BepInEx/LogOutput.log` and `game/Mods/mod-state.json` for mod status/errors. |
+| `LoadAsset<T>()` returns `null` | Wrong asset path or wrong asset type `T` | Call `GetAssetNames(...)` or `LoadAllAssets<T>()` first, then use the exact lowercased path from the bundle. |
+| `GetPinnableReference()` method-not-found appears | Direct Unity wrapper call was used (`bundle.LoadAsset*` / `bundle.LoadAllAssets*`) | Use `context.AssetBundles.LoadAsset<T>()` / `LoadAllAssets<T>()` instead of direct wrapper calls. |
+| Compile error for `Texture2D` / `AudioClip` / `GameObject` | Missing Unity interop reference in your DLL project | Add the matching `UnityEngine.*.dll` reference (for example `UnityEngine.CoreModule.dll` for `Texture2D`). |
+| Toggle says `(restart)` and assets do not update immediately | Expected behavior for bundle-declaring mods | Restart the game after enabling/disabling the mod. |
 
 ### Quick reference
 

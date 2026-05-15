@@ -6,6 +6,40 @@ Source TODO paragraph: "Crabtya-lite: Once v1 of Crabtya is done, I want a lite 
 
 Design and build a separate post-v1 **Crabtya Lite** package: a minimal, curated quality-of-life loader for the main game install that exposes only pre-installed QoL settings through native-feeling settings UI. Lite is not a user mod loader and must not inherit full Crabtya's arbitrary mod loading surface.
 
+## Status (2026-05-15) - Done: runtime-verified, packaged, docs updated
+
+Work completed in this pass (2026-05-15):
+
+- Runtime-verified on a Lite-only install (no EIC.ModLoader.dll present):
+  - `LogOutput.log` contains all expected Lite startup lines.
+  - `ErrorLog.log` is empty.
+  - No `game/Mods/` scanning, `mod-state.json`, or full Crabtya surfaces observed.
+  - Coexistence guard fires correctly when `EIC.ModLoader.dll` is present.
+- Release artifact produced: `packages/lite/Crabtya-Lite-v1.0.0.zip` (63,013,053 bytes; SHA256: `2A568DD7E60765CF7B8438EF35F31E45BA8AA8274920C18291372399C5BF63D5`).
+- `docs/users/crabtya-lite.md` expanded with Lite vs full Crabtya comparison table.
+- `PLAN.md` and `agent-handoff.md` updated.
+- `tools/package-release.ps1` bug fixed: validation errors on intentional fixture mods no longer block `-SkipMods` runs.
+
+Work completed in earlier pass (2026-05-14):
+
+- Architecture/product split decision written and accepted in:
+  - `docs/development/crabtya-lite-architecture-decision.md`
+- Separate Lite plugin project created:
+  - `loader/Crabtya.Lite/Crabtya.Lite.csproj`
+  - `loader/Crabtya.Lite/Plugin.cs`
+  - `loader/Crabtya.Lite/LiteRuntimeBootstrap.cs`
+  - `loader/Crabtya.Lite/LiteSettingsStore.cs`
+  - `loader/Crabtya.Lite/LiteCameraApplicator.cs`
+  - `loader/Crabtya.Lite/LiteNativeSettingsApplicator.cs`
+- Lite behavior currently implemented:
+  - QoL-only bootstrap with full-loader coexistence detection and warning/abort by default.
+  - Lite-owned settings persistence at `game/CrabtyaLite/settings.json`.
+  - Mouse-wheel zoom + invert-scroll logic without full-loader mod systems.
+  - FOV/zoom/invert controls injected into native-feeling settings UI.
+- Build status:
+  - `dotnet build loader/Crabtya.Lite/Crabtya.Lite.csproj -c Release` succeeds.
+  - `dotnet build loader/EIC.ModLoader/EIC.ModLoader.csproj -c Release` still succeeds.
+
 ## Scope
 
 Start with a short architecture/product split spike, then implement only the smallest safe Lite package. Likely write areas are a new `loader/Crabtya.Lite/` project or an explicitly separated packaging path, shared QoL applicator code if it can be extracted safely, `tools/` package scripts, `packages/`, and Lite-specific user docs. Do not modify original game binaries or bundled assets under `game/Everything is Crab_Data/`.

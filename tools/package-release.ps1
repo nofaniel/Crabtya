@@ -6,6 +6,7 @@ param(
     [string]$ReleaseLabel = "v1-candidate",
     [string[]]$ModId = @(),
     [switch]$SkipLoader,
+    [switch]$SkipLite,
     [switch]$SkipMods,
     [switch]$SkipTemplates,
     [switch]$Clean
@@ -37,6 +38,7 @@ if ([string]::IsNullOrWhiteSpace($OutputRoot))
 
 $modsRoot = Join-Path $GameRoot "Mods"
 $loaderPluginPath = Join-Path $GameRoot "BepInEx\plugins\EIC.ModLoader.dll"
+$litePluginPath = Join-Path $GameRoot "BepInEx\plugins\Crabtya.Lite.dll"
 $loaderApiPath = Join-Path $GameRoot "BepInEx\plugins\Crabtya.ModApi.dll"
 $modIdPattern = "^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)+$"
 $appliedDefinitionTypes = @("localization", "balancePatch", "cameraPatch", "visual", "introSkip", "uiScale")
@@ -521,6 +523,77 @@ function New-LoaderPackage {
     }
 }
 
+function New-LitePackage {
+    param(
+        [Parameter(Mandatory = $true)][string]$StageRoot,
+        [Parameter(Mandatory = $true)][string]$ZipPath
+    )
+
+    $pluginFile = Get-Item -LiteralPath $litePluginPath
+    New-EmptyDirectory -Path $StageRoot
+
+    foreach ($rootFile in @(".doorstop_version", "changelog.txt", "doorstop_config.ini", "winhttp.dll"))
+    {
+        Copy-FileWithParents -Source (Join-Path $GameRoot $rootFile) -Destination (Join-Path $StageRoot $rootFile)
+    }
+
+    Copy-DirectoryContents -Source (Join-Path $GameRoot "BepInEx\core") -Destination (Join-Path $StageRoot "BepInEx\core")
+    Copy-DirectoryContents -Source (Join-Path $GameRoot "BepInEx\interop") -Destination (Join-Path $StageRoot "BepInEx\interop")
+    Copy-DirectoryContents -Source (Join-Path $GameRoot "BepInEx\unity-libs") -Destination (Join-Path $StageRoot "BepInEx\unity-libs")
+    Copy-DirectoryContents -Source (Join-Path $GameRoot "dotnet") -Destination (Join-Path $StageRoot "dotnet")
+    Copy-FileWithParents -Source (Join-Path $GameRoot "BepInEx\config\BepInEx.cfg") -Destination (Join-Path $StageRoot "BepInEx\config\BepInEx.cfg")
+    Copy-FileWithParents -Source $litePluginPath -Destination (Join-Path $StageRoot "BepInEx\plugins\Crabtya.Lite.dll")
+
+    Copy-FileWithParents -Source (Join-Path $RepoRoot "docs\README.md") -Destination (Join-Path $StageRoot "docs\README.md")
+    Copy-FileWithParents -Source (Join-Path $RepoRoot "docs\users\crabtya-lite.md") -Destination (Join-Path $StageRoot "docs\users\crabtya-lite.md")
+    Copy-FileWithParents -Source (Join-Path $RepoRoot "docs\users\troubleshooting.md") -Destination (Join-Path $StageRoot "docs\users\troubleshooting.md")
+
+    # Install / uninstall scripts.
+    Copy-FileWithParents -Source (Join-Path $scriptRoot "Install-CrabtyaLite.ps1") -Destination (Join-Path $StageRoot "Install-CrabtyaLite.ps1")
+    Copy-FileWithParents -Source (Join-Path $scriptRoot "Uninstall-CrabtyaLite.ps1") -Destination (Join-Path $StageRoot "Uninstall-CrabtyaLite.ps1")
+
+    $readmePath = Join-Path $StageRoot "README.txt"
+    $readme = @(
+        "Crabtya Lite Package"
+        "Release label: $ReleaseLabel"
+        ""
+        "Source plugin fingerprint:"
+        "- File: BepInEx\\plugins\\Crabtya.Lite.dll"
+        "- Size: $($pluginFile.Length) bytes"
+        "- LastWriteUtc: $($pluginFile.LastWriteTimeUtc.ToString('o'))"
+        ""
+        "Crabtya Lite is a curated QoL-only plugin (zoom/invert/FOV)."
+        "It is not a folder-based mod loader and does not load game/Mods manifests."
+        ""
+        "Quick Install (PowerShell):"
+        "1. Close the game."
+        "2. Extract this zip to a temporary folder."
+        "3. Open PowerShell in that folder and run:"
+        "     .\\Install-CrabtyaLite.ps1 -GamePath `"C:\\path\\to\\Everything is Crab`""
+        "4. Launch the game and confirm BepInEx\\LogOutput.log contains 'Crabtya Lite runtime initialized'."
+        ""
+        "Compatibility:"
+        "- Do not install full Crabtya and Crabtya Lite together unless you intentionally override guards for local testing."
+        ""
+        "Uninstall:"
+        "     .\\Uninstall-CrabtyaLite.ps1 -GamePath `"C:\\path\\to\\Everything is Crab`""
+        ""
+        "Docs shipped in this package:"
+        "- docs\\users\\crabtya-lite.md"
+        "- docs\\users\\troubleshooting.md"
+    ) -join [Environment]::NewLine
+    Set-Content -LiteralPath $readmePath -Value $readme -Encoding ASCII
+
+    New-ZipFromDirectoryContents -SourceDirectory $StageRoot -ZipPath $ZipPath
+
+    [pscustomobject]@{
+        ZipPath = $ZipPath
+        ReleaseLabel = $ReleaseLabel
+        PluginSize = $pluginFile.Length
+        PluginLastWriteUtc = $pluginFile.LastWriteTimeUtc.ToString("o")
+    }
+}
+
 function New-ModPackage {
     param(
         [Parameter(Mandatory = $true)]$Info,
@@ -583,6 +656,7 @@ Assert-Exists -Path $GameRoot -Label "Game root"
 Assert-Exists -Path $modsRoot -Label "Mods root"
 
 $loaderOutputRoot = Join-Path $OutputRoot "loader"
+$liteOutputRoot = Join-Path $OutputRoot "lite"
 $modsOutputRoot = Join-Path $OutputRoot "mods"
 $templatesOutputRoot = Join-Path $OutputRoot "templates"
 $stagingRoot = Join-Path $OutputRoot "_staging"
@@ -590,6 +664,7 @@ $stagingRoot = Join-Path $OutputRoot "_staging"
 if ($Clean)
 {
     Remove-DirectoryIfPresent -Path $loaderOutputRoot
+    Remove-DirectoryIfPresent -Path $liteOutputRoot
     Remove-DirectoryIfPresent -Path $modsOutputRoot
     Remove-DirectoryIfPresent -Path $templatesOutputRoot
     Remove-DirectoryIfPresent -Path $stagingRoot
@@ -597,6 +672,7 @@ if ($Clean)
 
 New-DirectoryIfMissing -Path $OutputRoot
 New-DirectoryIfMissing -Path $loaderOutputRoot
+New-DirectoryIfMissing -Path $liteOutputRoot
 New-DirectoryIfMissing -Path $modsOutputRoot
 New-DirectoryIfMissing -Path $templatesOutputRoot
 New-DirectoryIfMissing -Path $stagingRoot
@@ -688,7 +764,7 @@ $selectedValidationErrors = @(
     }
 )
 
-if ($selectedValidationErrors.Count -gt 0)
+if (-not $SkipMods -and $selectedValidationErrors.Count -gt 0)
 {
     throw "Packaging validation failed:`n$($selectedValidationErrors -join [Environment]::NewLine)"
 }
@@ -701,6 +777,21 @@ if (-not $SkipLoader)
     $loaderStageRoot = Join-Path $stagingRoot "loader"
     $loaderZipPath = Join-Path $loaderOutputRoot "EverythingIsCrab.ModLoader-$ReleaseLabel.zip"
     $loaderSummary = New-LoaderPackage -StageRoot $loaderStageRoot -ZipPath $loaderZipPath
+}
+
+$liteSummary = $null
+if (-not $SkipLite)
+{
+    if (Test-Path -LiteralPath $litePluginPath -PathType Leaf)
+    {
+        $liteStageRoot = Join-Path $stagingRoot "lite"
+        $liteZipPath = Join-Path $liteOutputRoot "Crabtya-Lite-$ReleaseLabel.zip"
+        $liteSummary = New-LitePackage -StageRoot $liteStageRoot -ZipPath $liteZipPath
+    }
+    else
+    {
+        Write-Warning "Crabtya Lite plugin not found: $litePluginPath. Skipping Lite package."
+    }
 }
 
 $modSummaries = @()
@@ -737,6 +828,7 @@ $summary = [ordered]@{
     releaseLabel = $ReleaseLabel
     outputRoot = $OutputRoot
     loaderPackage = $loaderSummary
+    litePackage = $liteSummary
     modPackages = $modSummaries
     templatePackages = $templateSummaries
 }

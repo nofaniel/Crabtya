@@ -306,18 +306,23 @@ Asset bundles are pre-built Unity binary files that ship custom assets (textures
 **Notes:**
 - The bundle file must be built with Unity **6000.2.15f1** (the same version as the game). Bundles built with other Unity versions will fail to load.
 - Bundle files typically have no extension — they are raw binary AssetBundle files.
-- Loaded bundles are available to DLL mods via `AssetBundleApplicator.GetBundle(modId, relativePath)`.
+- Loaded bundles are available to DLL mods through `ICrabtyaModContext.AssetBundles`.
 - Mods with declared asset bundles are **restart-required** when toggled (bundles cannot be safely unloaded at runtime).
 - All bundle paths must be relative to the mod folder and may not use `..`.
 
 **DLL mod access example:**
 ```csharp
-var bundle = AssetBundleApplicator.GetBundle("author.my-mod", "bundles/my-assets");
-if (bundle != null)
+if (context.AssetBundles.TryGetBundle("bundles/my-assets", out _))
 {
-    var texture = bundle.LoadAsset<Texture2D>("my_texture");
+    var texture = context.AssetBundles.LoadAsset<Texture2D>(
+        "bundles/my-assets",
+        "assets/textures/my_texture.png");
 }
 ```
+
+Use `context.AssetBundles.LoadAsset<T>()` / `LoadAllAssets<T>()` for runtime extraction from
+loaded bundles. These API calls route through Crabtya's Unity 6 compat layer and avoid the
+direct `bundle.LoadAsset<T>()` / `bundle.LoadAllAssets()` wrapper issue on this stack.
 
 ## Validation Rules (v1)
 
@@ -339,7 +344,7 @@ if (bundle != null)
 - `entrypoints` must be non-empty fully qualified type names.
 - DLL mods must provide both `assemblies` and `entrypoints`.
 - `content.catalogs`, `content.assetBundles`, and `content.definitions` paths must be relative, may not contain `..`, and must exist.
-- `content.assetBundles` entries are loaded via `AssetBundle.LoadFromFile()` at startup, before DLL entrypoints run. Bundles must be built with Unity 6000.2.15f1 for StandaloneWindows64. Mods declaring asset bundles are restart-required when toggled. DLL entrypoints can retrieve a loaded bundle via `AssetBundleApplicator.GetBundle(modId, relativePath)` (reference `EIC.ModLoader.dll`). See [Asset Workflow](asset-workflow.md) for the full build recipe.
+- `content.assetBundles` entries are loaded at startup before DLL entrypoints run (`LoadFromStream` with fallbacks). Bundles must be built with Unity 6000.2.15f1 for StandaloneWindows64. Mods declaring asset bundles are restart-required when toggled. DLL entrypoints access loaded bundles through `ICrabtyaModContext.AssetBundles` (`TryGetBundle`, `GetAssetNames`, `LoadAsset<T>`, `LoadAllAssets<T>`). See [Asset Workflow](asset-workflow.md) for the full build recipe.
 - Missing dependencies mark a mod as errored.
 - Errored mods are skipped and retained in place; they are not moved automatically.
 - If a startup toggle changes a mod that declares `assemblies` and/or `content.catalogs`, loader state marks restart-required reasons in `Mods/mod-state.json`.

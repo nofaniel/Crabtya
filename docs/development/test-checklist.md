@@ -52,6 +52,7 @@
 - [ ] Toggling a content-only mod (e.g. `faniel.fov-slider`) applies immediately: label shows `ENABLED`/`DISABLED` without `(restart)`, `mod-state.json` updates, `startup-commands.json` is NOT written.
 - [ ] Camera/visual effect of a hot-toggled mod is visible within ~1 s without restart.
 - [ ] Toggling a DLL mod (e.g. `faniel.dll-sample`) queues to `startup-commands.json` and shows `(restart)` label.
+- [x] Toggling a DLL mod (e.g. `faniel.dll-sample`) queues to `startup-commands.json` and shows `(restart)` label.
 - [ ] Hint text updates to "N changes queued for restart…" when restart-required toggles are pending.
 - [ ] Toggling a mod back to its original state clears the queue entry; label drops `(restart)`.
 - [x] Static proof: repeated content re-apply does not duplicate identical content warning strings per mod-state entry.
@@ -59,10 +60,11 @@
 ## Asset Bundle Loading
 
 - [ ] `content.assetBundles` path validates at manifest load time (file must exist under mod folder).
-- [ ] `AssetBundleApplicator: loaded bundle '…'` line appears in log for a declared valid bundle.
-- [ ] Bundle built with wrong Unity version emits `LoadFromFile returned null` warning and loading continues.
-- [ ] `AssetBundleApplicator.GetBundle(modId, relativePath)` returns the loaded bundle to a DLL mod.
-- [ ] Mod declaring bundles shows `(restart)` on toggle in Mods window.
+- [x] `AssetBundleApplicator: loaded bundle '…'` line appears in log for a declared valid bundle.
+- [x] Bundle built with wrong Unity version or invalid payload emits `LoadFromFile returned null` warning and loading continues (no crash).
+- [x] `ICrabtyaModContext.AssetBundles.TryGetBundle(relativePath, out _)` returns the loaded bundle to a DLL mod.
+- [x] `ICrabtyaModContext.AssetBundles.LoadAllAssets<T>()` / `LoadAsset<T>()` return non-null Unity assets from a loaded bundle.
+- [x] Mod declaring bundles shows `(restart)` on toggle in Mods window.
 - [x] Static proof: AssetBundle cache keys are slash-normalized for robust `GetBundle` lookups.
 
 ## Visual Patch Targets

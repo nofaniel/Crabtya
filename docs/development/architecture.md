@@ -56,7 +56,7 @@
 | `loader/EIC.ModLoader/MouseWheelZoomApplicator.cs` | Mouse-wheel camera zoom |
 | `loader/EIC.ModLoader/LocalizationHooks.cs` | Hooks Unity Localization table lookups |
 | `loader/EIC.ModLoader/DllModLoader.cs` | Loads DLL assemblies and invokes `ICrabtyaMod.OnLoad()` |
-| `loader/Crabtya.ModApi/` | Public mod API (`ICrabtyaMod`, `ICrabtyaModContext`, settings, logging) |
+| `loader/Crabtya.ModApi/` | Public mod API (`ICrabtyaMod`, `ICrabtyaModContext`, settings, logging, bundle access) |
 | `loader/EIC.ModLoader/StartupCommands.cs` | Parses CLI mod-toggle args |
 | `loader/EIC.ModLoader/StartupCommandQueue.cs` | Read/write/consume `Mods/startup-commands.json` |
 | `loader/EIC.ModLoader/SafeMode.cs` | Detects `--eic-safe-mode` flag or marker file |
@@ -136,7 +136,18 @@ when the player spawns.
 `content.assetBundles` paths are loaded during startup (after content pipeline, before DLL mods)
 via `AssetBundleApplicator.LoadForMods()`. Bundles must be built with Unity **6000.2.15f1**.
 Loaded bundles are cached for the session lifetime and accessible to DLL mods via
-`AssetBundleApplicator.GetBundle(modId, relativePath)`.
+`ICrabtyaModContext.AssetBundles`.
+
+The public bundle API exposed to mods is:
+
+- `TryGetBundle(relativePath, out object? bundle)`
+- `GetAssetNames(relativePath)`
+- `LoadAsset<TAsset>(relativePath, assetPath)`
+- `LoadAllAssets<TAsset>(relativePath)`
+
+Internally, these route through loader compat methods that bypass Unity 6 IL2CPP
+string-span interop failures seen with direct `bundle.LoadAsset<T>()` /
+`bundle.LoadAllAssets()` wrappers.
 
 ## Enemy Stat Patch Model
 

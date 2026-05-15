@@ -34,7 +34,9 @@ param(
     [string]$GamePath,
 
     [Parameter(Mandatory = $false)]
-    [string]$PackageZip = ""
+    [string]$PackageZip = "",
+
+    [switch]$AllowLiteCoexist
 )
 
 Set-StrictMode -Version Latest
@@ -114,6 +116,15 @@ if (-not (Test-Path -LiteralPath $gameExe -PathType Leaf))
 {
     Write-Warn "Did not find 'Everything is Crab.exe' in: $GamePath"
     Write-Warn "Proceeding anyway — ensure the path is correct before launching the game."
+}
+
+$litePlugin = Join-Path $GamePath "BepInEx\plugins\Crabtya.Lite.dll"
+if ((Test-Path -LiteralPath $litePlugin -PathType Leaf) -and -not $AllowLiteCoexist)
+{
+    Write-Fail "Detected Crabtya Lite at: $litePlugin"
+    Write-Fail "To avoid mixed installs, full Crabtya install is blocked by default when Lite is present."
+    Write-Fail "Remove Crabtya Lite first, or rerun with -AllowLiteCoexist for local testing only."
+    exit 1
 }
 
 # ---------------------------------------------------------------------------

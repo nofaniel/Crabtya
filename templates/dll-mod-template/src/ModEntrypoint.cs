@@ -29,7 +29,7 @@ public sealed class ModEntrypoint : ICrabtyaMod
         }
     }
 
-    private static void RegisterSettings(ICrabtyaSettingsContext settings)
+    private static void RegisterSettings(ICrabtyaSettingsRegistry settings)
     {
         // Toggle (bool)
         settings.RegisterBool(

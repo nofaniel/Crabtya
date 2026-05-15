@@ -123,11 +123,10 @@ Manifest:
 }
 ```
 
-DLL entrypoint — retrieve the bundle after startup loads it:
+DLL entrypoint — retrieve and load assets through the mod API context:
 
 ```csharp
 using Crabtya.ModApi;
-using EIC.ModLoader;
 using UnityEngine;
 
 public sealed class Entrypoint : ICrabtyaMod
@@ -138,10 +137,16 @@ public sealed class Entrypoint : ICrabtyaMod
 
     public void OnLoad(ICrabtyaModContext context)
     {
-        var bundle = AssetBundleApplicator.GetBundle("author.bundle-mod", "bundles/my-assets");
-        if (bundle == null) { context.Logger.Warning("Bundle not loaded."); return; }
+        var bundlePath = "bundles/my-assets";
+        if (!context.AssetBundles.TryGetBundle(bundlePath, out _))
+        {
+            context.Logger.Warning("Bundle not loaded.");
+            return;
+        }
 
-        var texture = bundle.LoadAsset<Texture2D>("assets/textures/my_texture.png");
+        var texture = context.AssetBundles.LoadAsset<Texture2D>(
+            bundlePath,
+            "assets/textures/my_texture.png");
         if (texture != null)
             context.Logger.Info("Texture loaded: " + texture.width + "x" + texture.height);
     }
@@ -151,7 +156,8 @@ public sealed class Entrypoint : ICrabtyaMod
 > **Important**: bundles must be built with **Unity 6000.2.15f1** for StandaloneWindows64.
 > See `docs/mod-makers/asset-workflow.md` for the full build recipe.
 > Bundle-declaring mods require a restart when toggled (the toggle shows `(restart)` in the Mods menu).
-> Your `.csproj` needs references to `EIC.ModLoader.dll`, `UnityEngine.CoreModule.dll`, and `UnityEngine.AssetBundleModule.dll` in addition to `Crabtya.ModApi.dll`.
+> Use `ICrabtyaModContext.AssetBundles` for runtime extraction from loaded bundles.
+> Most DLL mods only need references to `Crabtya.ModApi.dll` and the Unity interop assemblies for the asset types they consume (for example `UnityEngine.CoreModule.dll` for `Texture2D`).
 
 ## 5) Native Settings Registration
 

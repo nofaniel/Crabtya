@@ -16,17 +16,19 @@
 
 - Crabtya v1 core loader exists and is the active product direction.
 - Detailed Job plans expanded from earlier `TODO.md` ideas (Jobs 01-07), previously-untracked PLAN follow-ups (Jobs 08-10), and the current Crabtya Lite TODO note (Job 11) live under `docs/development/jobs/`.
+- All v1 release-gate Jobs (01-10) are complete; the next active primary Job is Job 11 (Crabtya Lite).
 - Job 01 (codebase separation audit) is complete; loader/API/sample boundaries are clean and the ownership boundaries are documented in `docs/development/architecture.md`.
 - Job 06 (scroll-zoom invert setting) is complete and runtime-verified; `Invert Scroll` toggle renders in the Mods menu for wheel-driven camera patches, persists to `runtime-settings.json`, and flips zoom direction live.
 - Job 07 (UI scale pop polish) is complete (2026-05-13); adaptive ui-scale refresh cadence, transition-burst stabilization for pause/main-menu/quit-confirm flows, and baseline-scale cloning for Crabtya menu buttons are landed and runtime-validated.
 - Job 03 (full code review) is complete (2026-05-13): static and runtime hardening landed (deterministic discovery/load-order, mod-local DLL entrypoint resolution, warning dedupe, AssetBundle key normalization, camera/ui scan-caching, per-frame camera patch cache, duplicate camera-apply removal, and reduced uiScale log churn), with user-confirmed minor zoomed-out stutter mitigation.
 - Job 08 (enemy stat patching surface) is complete and runtime-verified (2026-05-13); `EnemyStatPatchApplicator` patches confirmed in `LogOutput.log` across multiple enemies and archetypes.
-- Job 10 (v1 validation, release packaging) is in progress (2026-05-13): release packaging complete; 10 of 15 checklist items confirmed from runtime logs (fingerprint, content-only load, badge+menu UI, settings persist, hot-apply, ErrorLog empty, achievement patching, IsolatedSave redirect, conflict detection, enemy stat patches). Remaining 5 items (DLL-only load, hybrid load, broken-mod isolation, throwing-entrypoint isolation, startup-commands queue) require a run with DLL mods enabled.
+- Job 09 (AssetBundle end-to-end proof) is complete (2026-05-14): hybrid bundle load/retrieval, DLL-side extraction through `ICrabtyaModContext.AssetBundles`, and missing/corrupt failure-path isolation are runtime-proven; direct Unity wrapper extraction calls remain limited by the known Unity 6/BepInEx `ReadOnlySpan<T>.GetPinnableReference()` interop gap.
+- Job 10 (v1 validation, release packaging) is complete (2026-05-14): release packaging complete; all 15 checklist items now have runtime evidence, including startup queue consume/apply (`Queued startup mod-toggle commands consumed`, `Startup toggle applied`, and queue file cleared).
 - Job 02 (git publication) is complete (2026-05-14): `.gitignore`, `.gitattributes`, root README, packages README all in place; initial commit `60c04e4` (142 files); remote origin set to `https://github.com/nofaniel/Crabtya.git`; `master` pushed to origin at `cf378d5`. Remaining publication work is release-page/tag publishing, not repo initialization.
 - Git publication/repo polish is intentionally last for the Crabtya v1 release flow, but every earlier v1 Job should leave docs, package boundaries, and source ownership cleaner so Job 02 is mostly final assembly rather than archaeology. GitHub repo setup is now complete; remaining public-facing polish is release-page work and later optional GitHub Pages presentation.
 - Brand/logo assets are available at repo root as `logo-L.png`, `logo-M.png`, and `logo-S.png`; Jobs touching branding, README/GitHub presentation, package polish, or screenshots should prefer these files over older draft assets.
 - The intended private GitHub remote is `https://github.com/nofaniel/Crabtya.git`. Repo initialization and push are complete; remaining GitHub publication work is release-page/tag creation and later optional presentation polish.
-- Job 11 (Crabtya Lite) is a post-v1 follow-up and must not expand the v1 release gate.
+- Job 11 (Crabtya Lite) is complete (2026-05-15): separate Lite plugin runtime-verified, `packages/lite/Crabtya-Lite-v1.0.0.zip` produced, user docs updated with Lite vs full comparison, and Job 11 plan/handoff closed. All Jobs are now Done.
 
 ## Job Board
 
@@ -38,13 +40,13 @@ Recommended order is based on importance, implementation ease, dependency risk, 
 | 2 | 06 | Done (2026-05-13) | High | Low | Focused Mod Polish | `docs/development/jobs/job-06-scroll-zoom-invert-setting.md` | Add a persisted invert-scroll setting to the Mouse Wheel Zoom mod. | `Invert Scroll` toggle in Mods menu, persists to `runtime-settings.json`, flips wheel direction at runtime. |
 | 3 | 07 | Done (2026-05-13) | High | Medium | Focused Mod Polish | `docs/development/jobs/job-07-ui-scale-pop-polish.md` | Fix remaining UI scale popping and polish the UI Scale sample mod. | Runtime proof across menus/scenes with no cumulative drift and clear docs. |
 | 4 | 03 | Done (2026-05-13) | Critical | High | Review/Hardening | `docs/development/jobs/job-03-full-code-review.md` | Review loader, menus, public API, bundled mods, templates, tools, and docs for bugs/performance/polish. | Findings/fixes recorded with verification and prioritized residual risks. |
-| 5 | 09 | In progress (2026-05-14, bundle loading proven; asset extraction blocked by BepInEx/Unity 6 IL2CPP vtable gap) | High | Medium | Surface Verification | `docs/development/jobs/job-09-assetbundle-proof.md` | Prove `content.assetBundles` end to end with a real Unity 6000.2.15f1 bundle and document the mod-maker build recipe. | Bundle loads + asset retrieves + visible effect, with success and failure paths logged. |
+| 5 | 09 | Done (2026-05-14, hybrid load/retrieval + mod API extraction + missing/corrupt isolation proven; direct Unity wrappers still limited by BepInEx/Unity 6 IL2CPP vtable gap) | High | Medium | Surface Verification | `docs/development/jobs/job-09-assetbundle-proof.md` | Prove `content.assetBundles` end to end with a real Unity 6000.2.15f1 bundle and document the mod-maker build recipe. | Bundle loads + assets extract via `ICrabtyaModContext.AssetBundles`; missing/corrupt paths log isolated warnings without blocking other mods. |
 | 6 | 04 | Done (2026-05-13) | Medium/High | Medium | UX Polish | `docs/development/jobs/job-04-loader-branding.md` | Improve the small red Crabtya loaded label into a stronger native-feeling branding surface. | Runtime-proven branding with safe fallback and no old overlay revival. |
 | 7 | 05 | Done (2026-05-13) | Critical | High | API/Loader Evolution | `docs/development/jobs/job-05-mod-api-conflicts.md` | Harden the mod API and add conflict notification/prevention for conflicts Crabtya can prove. | Conflict metadata/detection/UI/docs work with unrelated mods still loading. |
 | 8 | 08 | Done (2026-05-13) | High | Medium | API/Loader Evolution | `docs/development/jobs/job-08-enemy-stat-patching.md` | Add `enemy.stat.*` declarative balance-patch surface after one runtime probe pass to confirm class/method names. | Enemy stat moves at runtime via manifest, validation isolates bad entries, docs updated. |
-| 9 | 10 | In progress (2026-05-13, runtime validation pending) | Critical | Medium/High | Release Gate | `docs/development/jobs/job-10-v1-validation-release-packaging.md` | Run the full v1 Validation Checklist end to end and produce the final loader/template release zips under `packages/`. | All 15 checklist items have captured evidence; versioned release artifacts staged. |
+| 9 | 10 | Done (2026-05-14) | Critical | Medium/High | Release Gate | `docs/development/jobs/job-10-v1-validation-release-packaging.md` | Run the full v1 Validation Checklist end to end and produce the final loader/template release zips under `packages/`. | All 15 checklist items captured with runtime evidence, including startup queue write/consume behavior. |
 | 10 | 02 | Done (2026-05-14) | High | Medium | Publication | `docs/development/jobs/job-02-git-initial-readiness.md` | Prepare repo for initial git/GitHub publication with README, ignore rules, and release clarity. | Root README and `.gitignore` ready; initial commit 60c04e4 (142 files); remote origin set to https://github.com/nofaniel/Crabtya.git; `master` pushed to origin at `cf378d5`. Release-page publishing remains. |
-| 11 | 11 | Not started | Medium/High | High | Post-v1 Product Split | `docs/development/jobs/job-11-crabtya-lite.md` | Build a separate minimal QoL-only Crabtya Lite package with built-in native settings and no arbitrary mod loading. | Lite architecture is separated from full Crabtya; scroll/FOV QoL settings work on the main install without full-loader surfaces. |
+| 11 | 11 | Done (2026-05-15): separate Lite plugin runtime-verified on Lite-only install; `packages/lite/Crabtya-Lite-v1.0.0.zip` produced (SHA256: 2A568DD7E60765CF7B8438EF35F31E45BA8AA8274920C18291372399C5BF63D5); user docs updated with Lite vs full Crabtya comparison; ErrorLog.log empty in verified run | Medium/High | High | Post-v1 Product Split | `docs/development/jobs/job-11-crabtya-lite.md` | Build a separate minimal QoL-only Crabtya Lite package with built-in native settings and no arbitrary mod loading. | Lite architecture is separated from full Crabtya; scroll/FOV QoL settings work on the main install without full-loader surfaces. |
 
 ## Job Dependencies, Parallelism, And Suggested Order
 
@@ -107,13 +109,13 @@ Add invert-scroll as a data-driven setting for wheel-driven camera patches, not 
 
 Verify current behavior first, then fix remaining popping/layout drift with targeted baseline/eligibility/timing changes. Preserve game-owned layout and animations. Document any unavoidable limitations honestly.
 
-### Job 08 - Enemy Stat Patching Surface — Done (2026-05-13, runtime verification pending)
+### Job 08 - Enemy Stat Patching Surface — Done (2026-05-13, runtime verified)
 
-Code complete and built (0 errors, 0 warnings). Added `EnemyStatPatchApplicator.cs` with a Harmony postfix on `BasicEnemyCharacter.InitEnemyInstanceStatsIfNeeded`, confirmed via interop DLL inspection. Supports `enemy.stat.*` (global) and `enemy.<EEnemyArchetype>.stat.*` (per-archetype) target prefixes with the same set/add/multiply vocabulary as player stat patches. No changes to `ContentPipeline.cs` or `ContentDefinitions.cs` — balance patches route through existing infrastructure. Test fixture at `game/Mods/test.enemy-stat/`. Docs updated: `architecture.md`, `manifest-format.md`, `agent-handoff.md`. Runtime verification pending: enable `test.enemy-stat` and check `LogOutput.log` for apply lines.
+Code complete, built cleanly, and runtime-verified. Added `EnemyStatPatchApplicator.cs` with a Harmony postfix on `BasicEnemyCharacter.InitEnemyInstanceStatsIfNeeded`, confirmed via interop DLL inspection. Supports `enemy.stat.*` (global) and `enemy.<EEnemyArchetype>.stat.*` (per-archetype) target prefixes with the same set/add/multiply vocabulary as player stat patches. No changes to `ContentPipeline.cs` or `ContentDefinitions.cs` — balance patches route through existing infrastructure. Test fixture at `game/Mods/test.enemy-stat/`. Docs updated: `architecture.md`, `manifest-format.md`, `agent-handoff.md`.
 
-### Job 09 - AssetBundle End-to-End Proof
+### Job 09 - AssetBundle End-to-End Proof — Done (2026-05-14)
 
-Verify the existing `content.assetBundles` loading path against a real Unity 6000.2.15f1 StandaloneWindows64 bundle. Coordinate with the user to obtain or build the test bundle; consume it through a minimal hybrid test mod that proves load, retrieval via `AssetBundleApplicator.GetBundle`, and a visible in-game effect. Exercise missing/corrupt/misdeclared failure paths and document the mod-maker build recipe.
+Runtime-proof is complete for startup load, hybrid retrieval/extraction via `ICrabtyaModContext.AssetBundles`, and missing/corrupt failure-path isolation. Keep direct Unity wrapper limitation notes (`bundle.LoadAsset*` / `bundle.LoadAllAssets*`) until upstream BepInEx Unity 6 interop fix lands.
 
 ### Job 10 - v1 Validation Pass And Release Packaging
 
@@ -122,6 +124,13 @@ Run the full v1 Validation Checklist below against the latest build, fix only wh
 ### Job 11 - Crabtya Lite QoL Loader
 
 Create a separate post-v1 Lite package for curated QoL-only features: scroll zoom/invert scroll and FOV in native-feeling settings. Lite must not load user mods, manifests, DLL entrypoints, or full Crabtya state/UI, and it must not weaken the full loader's save-isolation/achievement-blocking contract. Prefer separation by project/package over a runtime mode flag.
+
+Current progress (2026-05-14):
+
+- Architecture decision accepted in `docs/development/crabtya-lite-architecture-decision.md`.
+- New `loader/Crabtya.Lite/` plugin scaffolded with Lite-only bootstrap, settings store (`game/CrabtyaLite/settings.json`), camera zoom/invert/FOV applicators, and native settings injection path.
+- Both `loader/Crabtya.Lite/Crabtya.Lite.csproj` and `loader/EIC.ModLoader/EIC.ModLoader.csproj` build cleanly.
+- Remaining: runtime-only validation pass (Lite-only install behavior), Lite packaging scripts/artifacts, and Lite user docs/install guidance.
 
 ## Product Direction (Authoritative)
 
@@ -143,9 +152,9 @@ The v1 runtime safety boundary is:
 Planned follow-up now tracked on the Job board:
 
 - Enemy stat patching surface (`enemy.stat.*` balance patches) - Job 08 (Done, 2026-05-13).
-- AssetBundle end-to-end proof against a Unity 6000.2.15f1 test bundle - Job 09.
-- Full v1 validation pass and release packaging - Job 10.
-- Post-v1 Crabtya Lite QoL loader - Job 11.
+- AssetBundle end-to-end proof against a Unity 6000.2.15f1 test bundle - Job 09 (Done, 2026-05-14).
+- Full v1 validation pass and release packaging - Job 10 (Done, 2026-05-14).
+- Post-v1 Crabtya Lite QoL loader - Job 11 (active).
 
 Post-v1 product split:
 
@@ -159,7 +168,7 @@ Recently landed:
 - Mods window scrollable layout - `ScrollRect` plus `Scrollbar` added; hint text is dynamic.
 - Installer/uninstaller scripts - `tools/Install-Crabtya.ps1` and `tools/Uninstall-Crabtya.ps1` bundled in the loader package.
 - Mod templates - `templates/content-mod-template/` and `templates/dll-mod-template/` with full READMEs.
-- AssetBundle loading — `AssetBundleApplicator` loads `content.assetBundles` at startup before DLL entrypoints; end-to-end infrastructure proven with `crabtya.bundle-test` hybrid test mod (runtime success-path verification pending user supplying a Unity 6000.2.15f1 bundle); full Unity build recipe documented in `docs/mod-makers/asset-workflow.md`.
+- AssetBundle loading — `AssetBundleApplicator` loads `content.assetBundles` at startup before DLL entrypoints; hybrid load/retrieval plus DLL-side extraction via `ICrabtyaModContext.AssetBundles` are runtime-proven with `crabtya.bundle-test` using a real Unity 6000.2.15f1 bundle. Direct Unity wrapper calls (`bundle.LoadAsset*` / `bundle.LoadAllAssets*`) remain limited by a BepInEx/Unity 6 IL2CPP `ReadOnlySpan<T>.GetPinnableReference()` vtable gap. Full Unity build recipe is documented in `docs/mod-makers/asset-workflow.md`.
 - Extended visual targets - `visual` definitions support `player.baseSprite`, `enemy.baseSprite`, `gameobject.named:<name>`, and `sprite.named:<name>`.
 - In-run start/pause menu hosts a `MOD SETTINGS` entry that opens the same dedicated Crabtya Mods settings window with no duplicate settings surface.
 - Mods window frame definition and typography refreshed for stronger pixel-art contrast.
@@ -200,7 +209,7 @@ Active declarative surfaces:
 Future-facing / discovery-only:
 
 - `evolution`
-- `enemy` - the `enemy.stat.*` slice is on the Job board as Job 08; the rest of this surface remains discovery-only.
+- `enemy` - `enemy.stat.*` is active and runtime-verified; the rest of this surface remains discovery-only.
 
 Do not assume future-facing surfaces are live unless code and runtime verification confirm them.
 

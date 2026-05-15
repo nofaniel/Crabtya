@@ -110,3 +110,13 @@ If you build packages locally with `tools/package-release.ps1`, the artifacts la
 
 - Do not replace or edit original game files during normal mod install/uninstall.
 - If target/version mismatch warnings appear, treat the mod as unsafe until updated.
+
+## Crabtya Lite (QoL-only)
+
+Crabtya Lite is a separate post-v1 package for built-in QoL settings only (zoom/invert/FOV), not folder mods.
+
+- Lite guide: `docs/users/crabtya-lite.md`
+- Lite install script: `Install-CrabtyaLite.ps1`
+- Lite uninstall script: `Uninstall-CrabtyaLite.ps1`
+
+Do not install full Crabtya and Crabtya Lite together unless you are intentionally testing coexistence overrides.

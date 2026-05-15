@@ -56,3 +56,12 @@
 - Include loader version, game version, mod ID/version, and relevant log excerpts.
 - Include steps to reproduce from clean launch to failure.
 - Include `game/Mods/mod-state.json` and (if present) `game/Mods/startup-commands.json`.
+
+## Crabtya Lite Specific
+
+- If Lite does not start, check `game/BepInEx/LogOutput.log` for:
+  - `Loading [Crabtya Lite ...]`
+  - `Crabtya Lite runtime initialized.`
+- If Lite logs a warning that full Crabtya is detected, remove `BepInEx/plugins/EIC.ModLoader.dll` (or other full-loader install artifacts) for normal Lite use.
+- If mixed install is intentional for local testing, use coexistence override flags/scripts and document that in bug reports.
+- Lite settings file path is `game/CrabtyaLite/settings.json`.

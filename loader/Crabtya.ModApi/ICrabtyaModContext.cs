@@ -13,4 +13,6 @@ public interface ICrabtyaModContext
     ICrabtyaLogger Logger { get; }
 
     ICrabtyaSettingsRegistry Settings { get; }
+
+    ICrabtyaAssetBundleRegistry AssetBundles { get; }
 }

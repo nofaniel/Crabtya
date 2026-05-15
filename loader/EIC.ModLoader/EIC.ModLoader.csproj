@@ -4,6 +4,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>annotations</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>EIC.ModLoader</AssemblyName>
     <RootNamespace>EIC.ModLoader</RootNamespace>
     <PackageId>Crabtya.ModLoader</PackageId>

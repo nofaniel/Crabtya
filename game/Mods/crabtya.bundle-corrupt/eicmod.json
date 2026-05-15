@@ -1,0 +1,19 @@
+{
+  "id": "crabtya.bundle-corrupt",
+  "name": "Crabtya Corrupt Bundle Fixture",
+  "version": "1.0.0",
+  "author": "Crabtya",
+  "description": "Validation fixture for AssetBundle failure isolation. Includes an intentionally invalid bundle payload.",
+  "targetGame": "Everything is Crab",
+  "targetUnity": "6000.2.15f1",
+  "loaderVersion": "1.x",
+  "dependencies": [],
+  "content": {
+    "catalogs": [],
+    "assetBundles": ["bundles/corrupt-assets"],
+    "definitions": []
+  },
+  "assemblies": [],
+  "entrypoints": [],
+  "defaultEnabled": false
+}

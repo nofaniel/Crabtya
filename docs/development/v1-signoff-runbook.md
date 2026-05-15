@@ -103,13 +103,11 @@ Also confirm:
 ## If Job 09 failure paths are being closed in the same pass
 
 1. Missing bundle path:
-   - temporarily rename `game/Mods/crabtya.bundle-test/bundles/test-assets`
-   - launch once and confirm the `bundle file not found` warning
-   - restore the real bundle file afterward
+   - enable `crabtya.bundle-missing` (or temporarily rename `game/Mods/crabtya.bundle-test/bundles/test-assets`)
+   - launch once and confirm the `Referenced assetBundle file is missing` / `bundle file not found` warning
 2. Corrupt bundle path:
-   - temporarily replace the file with a text file
-   - launch once and confirm `LoadFromFile returned null`
-   - restore the real bundle file afterward
+   - enable `crabtya.bundle-corrupt` (or temporarily replace a bundle with a text file)
+   - launch once and confirm `LoadFromFile returned null` warning while startup continues
 
 ## When the run passes
 

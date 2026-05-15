@@ -6,6 +6,12 @@ This folder contains implementation Jobs expanded from earlier `TODO.md` ideas (
 
 Work one primary Job at a time unless `PLAN.md` marks a parallel lane as safe and write scopes stay disjoint. Each Job should end with code/docs updates, runtime or static verification evidence, and a short handoff note.
 
+## Current Status Snapshot (2026-05-14)
+
+- Jobs `01-10`: **Done** (v1 release-gate complete).
+- Job `11` (`job-11-crabtya-lite.md`): **In progress** (architecture decision + separate Lite plugin scaffold + core Lite settings/zoom/invert/FOV systems implemented; runtime/package/docs closure pending).
+- Active primary work should now focus on Job 11 only, unless the user explicitly requests maintenance work on completed Jobs.
+
 ## Recommended Execution Order
 
 The file numbers are stable Job IDs, while the order below is the recommended work order from `PLAN.md`, balancing implementation ease, importance, dependency risk, and release readiness.
