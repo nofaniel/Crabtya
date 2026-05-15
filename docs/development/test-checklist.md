@@ -95,7 +95,7 @@
 - [x] `Install-Crabtya.ps1` and `Uninstall-Crabtya.ps1` scripts created and bundled in loader zip.
 - [x] Mod templates (`content-mod-template`, `dll-mod-template`) in `templates/` and bundled in loader zip.
 - [x] `PLAN.md` and docs aligned to current implementation.
-- [ ] Final `package-release.ps1` run produces complete zip with scripts, templates, and docs.
+- [x] Final `package-release.ps1` run produces complete zip with scripts, templates, and docs.
 - [ ] `Install-Crabtya.ps1` tested against a clean game directory — all checklist items pass.
 - [ ] `Uninstall-Crabtya.ps1` tested — game starts vanilla after uninstall.
 

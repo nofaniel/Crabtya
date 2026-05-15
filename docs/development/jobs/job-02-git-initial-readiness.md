@@ -58,4 +58,4 @@ Done (2026-05-14).
 - `git init` completed; initial commit `60c04e4` — 142 files, 20916 insertions.
 - Remote `origin` configured: `https://github.com/nofaniel/Crabtya.git`.
 - `master` pushed to `origin` at `cf378d5`.
-- Repository publication/setup is complete; remaining GitHub-side work is release-page/tag publishing and later optional GitHub Pages polish.
+- Repository publication/setup is complete. GitHub release-page/tag publishing was completed on 2026-05-15; remaining work is optional GitHub Pages/release-note polish.

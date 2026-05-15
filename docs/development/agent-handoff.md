@@ -3,9 +3,29 @@
 ## Current Snapshot (2026-05-15)
 
 - **All Jobs (01-11) are complete.** Crabtya v1 and Crabtya Lite are both released.
-- **No active Jobs remain.** The next work is release-page/tag publishing on GitHub (was always post-implementation) and any new features added to `PLAN.md`.
+- **No active Jobs remain.** GitHub release-page/tag publishing is complete; next work is any new features added to `PLAN.md` plus optional release-note/presentation polish.
 - **Current bundle guidance for mod makers:** use `ICrabtyaModContext.AssetBundles` APIs.
 - **Known upstream limitation (documented):** direct Unity wrapper calls `bundle.LoadAsset*` / `bundle.LoadAllAssets*` remain constrained on this runtime by the Unity 6/BepInEx IL2CPP `ReadOnlySpan<T>.GetPinnableReference()` interop gap.
+
+### 2026-05-15 - Release Pages Published + Fresh Packages Regenerated
+
+Status:
+
+- GitHub release/tag publishing complete for:
+  - `v1.0.0`
+  - `crabtya-lite-v1.0.0`
+  - `faniel.dll-sample-v1.0.0`
+  - `faniel.fov-slider-v1.0.0`
+  - `faniel.mousewheel-zoom-v1.0.0`
+  - `faniel.mvp-sample-v1.0.0`
+  - `faniel.no-intro-v1.0.0`
+  - `faniel.ui-scale-v1.0.0`
+
+Packaging refresh:
+
+- `tools/package-release.ps1 -ReleaseLabel v1.0.0 -Clean -ModId ...` rerun successfully.
+- Refreshed Lite artifact: `packages/lite/Crabtya-Lite-v1.0.0.zip` (63,013,425 bytes)
+- Refreshed Lite SHA256: `5FA7BDF4C0F35EBE31E69378DA94CA485B3010AE3BE59C418E9A5EE91A796FC5`
 
 ## What Landed Recently (Latest First)
 
