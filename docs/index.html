@@ -199,29 +199,70 @@
     }
 
     .lite {
-      margin: 0 auto 1.5rem;
+      margin: 0 auto 2.8rem;
       width: min(calc(100% - 2rem), var(--max));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 10px 24px rgba(18, 54, 66, 0.08);
+      box-shadow: 0 6px 18px rgba(18, 54, 66, 0.06);
       overflow: hidden;
       animation: popIn 0.7s ease both;
     }
 
+    .lite-hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.85rem 1.4rem 0.4rem;
+      background: linear-gradient(120deg, rgba(10, 95, 117, 0.07), rgba(11, 126, 122, 0.1));
+    }
+
+    .lite-hero-text { min-width: 0; }
+
     .lite-head {
       margin: 0;
-      padding: 1rem 1.1rem;
-      background: linear-gradient(120deg, rgba(10, 95, 117, 0.1), rgba(11, 126, 122, 0.14));
       font-family: "Chakra Petch", sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.45rem;
     }
+
+    .lite-sub {
+      margin: 0.3rem 0 0;
+      color: var(--ink-soft);
+      font-size: 0.97rem;
+    }
+
+    .lite-logo {
+      width: min(220px, 36vw);
+      height: auto;
+      filter: drop-shadow(0 8px 18px rgba(11, 94, 117, 0.18));
+    }
+
+    .lite-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0.7rem 1.4rem 0;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.28rem 0.75rem;
+      font-size: 0.83rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-green  { background: rgba(11, 145, 90, 0.12);  color: #0a6840; border: 1px solid rgba(11, 145, 90, 0.25); }
+    .badge-blue   { background: rgba(11, 126, 122, 0.12); color: #0a5f75; border: 1px solid rgba(11, 126, 122, 0.25); }
+    .badge-warm   { background: rgba(255, 158, 87, 0.14); color: #8a4200; border: 1px solid rgba(255, 158, 87, 0.3); }
 
     .lite-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
-      padding: 1rem 1.1rem 1.2rem;
+      padding: 1rem 1.1rem 0.8rem;
     }
 
     .lite-card {
@@ -241,6 +282,45 @@
       margin: 0.55rem 0 0;
       color: var(--ink-soft);
     }
+
+    .lite-card ul {
+      margin: 0.55rem 0 0;
+      padding-left: 1.2rem;
+      color: var(--ink-soft);
+    }
+
+    .lite-card li + li { margin-top: 0.35rem; }
+
+    .lite-compare {
+      margin: 0 1.1rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 0.92rem;
+    }
+
+    .lite-compare table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .lite-compare th, .lite-compare td {
+      padding: 0.55rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .lite-compare th {
+      background: rgba(11, 126, 122, 0.08);
+      font-family: "Chakra Petch", sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .lite-compare tr:last-child td { border-bottom: none; }
+    .lite-compare td:not(:first-child) { text-align: center; }
+
+    .yes { color: #0a7a44; font-weight: 700; }
+    .no  { color: #a33; font-weight: 700; }
 
     .lite-links {
       margin: 0;
@@ -297,6 +377,15 @@
       .grid,
       .lite-grid {
         grid-template-columns: 1fr;
+      }
+
+      .lite-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .lite-logo {
+        width: min(180px, 50vw);
+        margin: 0 auto;
       }
 
       .logo-wrap {
@@ -361,24 +450,6 @@
       </article>
     </section>
 
-    <section class="lite" aria-label="Crabtya Lite overview">
-      <h2 class="lite-head">Crabtya Lite</h2>
-      <div class="lite-grid">
-        <article class="lite-card">
-          <h3>What Lite Is</h3>
-          <p>Crabtya Lite is the curated, QoL-focused package. It is designed for players who want trusted quality-of-life improvements without managing arbitrary custom mod folders.</p>
-        </article>
-        <article class="lite-card">
-          <h3>How It Differs</h3>
-          <p>Lite is Steam-friendly, keeps achievements enabled, and uses your original save data. Full Crabtya is the open mod-loader platform with isolated modded sessions and broader mod support.</p>
-        </article>
-      </div>
-      <div class="lite-links">
-        <a class="btn btn-primary" href="https://github.com/nofaniel/Crabtya/releases">Get Crabtya Lite</a>
-        <a class="btn btn-secondary" href="users/crabtya-lite.html">Read Lite Guide</a>
-      </div>
-    </section>
-
     <section class="how" aria-label="How Crabtya works">
       <h2>How It Works</h2>
       <ol>
@@ -387,6 +458,59 @@
         <li>Declared DLL assemblies and entrypoints load after startup content, with each mod isolated from failures in others.</li>
         <li>Mod settings persist under the game Mods data path and survive restart when the setting surface supports it.</li>
       </ol>
+    </section>
+
+    <section class="lite" aria-label="Crabtya Lite overview">
+      <div class="lite-hero">
+        <div class="lite-hero-text">
+          <h2 class="lite-head">Also Available: Crabtya Lite</h2>
+          <p class="lite-sub">Curated QoL improvements without any mod management. No <code>game/Mods/</code> folder, no manifests, no DLL loading — just the trusted built-in settings.</p>
+        </div>
+        <img class="lite-logo" src="assets/logo-lite-L.png" alt="Crabtya Lite logo">
+      </div>
+      <div class="lite-badges">
+        <span class="badge badge-green">Achievements enabled</span>
+        <span class="badge badge-blue">Uses original save data</span>
+        <span class="badge badge-warm">No mod folder required</span>
+        <span class="badge badge-blue">Steam-friendly</span>
+      </div>
+      <div class="lite-grid">
+        <article class="lite-card">
+          <h3>What Lite Includes</h3>
+          <ul>
+            <li>Mouse-wheel camera zoom</li>
+            <li>Invert Scroll toggle</li>
+            <li>FOV slider</li>
+            <li>No Intro (skips opening cinematic)</li>
+          </ul>
+        </article>
+        <article class="lite-card">
+          <h3>What Lite Does Not Include</h3>
+          <p>No <code>game/Mods/</code> scanning, no <code>eicmod.json</code> manifests, no DLL mod loading, no Crabtya Mods settings menu, and no isolated modded save. It is intentionally narrow — just the trusted QoL improvements.</p>
+        </article>
+      </div>
+      <div class="lite-compare">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Crabtya Lite</th>
+              <th>Full Crabtya</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>QoL (zoom, FOV, invert, no-intro)</td><td class="yes">Built-in</td><td>Via mods</td></tr>
+            <tr><td>Community folder mods</td><td class="no">No</td><td class="yes">Yes</td></tr>
+            <tr><td>DLL mod entrypoints</td><td class="no">No</td><td class="yes">Yes</td></tr>
+            <tr><td>Achievements enabled</td><td class="yes">Yes</td><td class="no">No</td></tr>
+            <tr><td>Original save data</td><td class="yes">Yes</td><td class="no">Isolated</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="lite-links">
+        <a class="btn btn-primary" href="https://github.com/nofaniel/Crabtya/releases">Get Crabtya Lite</a>
+        <a class="btn btn-secondary" href="users/crabtya-lite.html">Read Lite Guide</a>
+      </div>
     </section>
   </main>
 

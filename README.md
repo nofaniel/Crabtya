@@ -173,10 +173,40 @@ Crabtya v1 is feature-complete. See [`PLAN.md`](PLAN.md) for current job status 
 
 ## Crabtya Lite
 
-Crabtya Lite is a separate curated QoL package for players who do not need arbitrary community mod loading.
+<p align="center">
+  <img src="./logo-lite-L.png" alt="Crabtya Lite logo" width="720" />
+</p>
 
-- Lite includes built-in FOV, mouse-wheel zoom, invert scroll, and No Intro behavior.
-- Lite can be installed into the Steam version while keeping achievements enabled.
-- Lite uses the original game save data (no isolated modded save path).
-- Lite is a separate release choice from full Crabtya, not a runtime mode toggle.
+Crabtya Lite is a separate curated QoL package for players who do not need arbitrary community mod loading. It is **not** a folder-based mod loader — there is no `game/Mods/` scanning, no `eicmod.json` manifests, and no arbitrary DLL loading.
+
+### What Lite Includes
+
+| Feature | Detail |
+|---|---|
+| Mouse-wheel zoom | Scroll to zoom the camera in and out |
+| Invert Scroll | Toggle in the native-feeling Lite settings UI |
+| FOV slider | Adjust field of view without leaving the settings screen |
+| No Intro | Skip the opening cinematic on every launch |
+
+### Why Choose Lite?
+
+- **Steam-friendly** — achievements stay enabled.
+- **No save isolation** — uses your normal game save data directly.
+- **Zero mod management** — no manifest files, no enable/disable toggles, no restart flags.
 - Crabtya Lite is also built on BepInEx IL2CPP.
+
+### Lite vs Full Crabtya
+
+| | Crabtya Lite | Full Crabtya |
+|---|---|---|
+| QoL (zoom, FOV, invert, no-intro) | Built-in | Via mods |
+| Community folder mods | **No** | Yes |
+| DLL mod entrypoints | **No** | Yes |
+| Mods settings menu | **No** | Yes |
+| Achievements enabled | Yes | **No** |
+| Save isolation | **No** | Yes |
+
+Install **Lite** if you only want QoL camera controls and no mod management overhead.
+Install **full Crabtya** if you want folder-based user mods, content mods, DLL mods, or the isolated-save modded play session.
+
+> **Do not install both at the same time.** Lite detects the full loader and refuses to run to prevent mixed-install conflicts.
