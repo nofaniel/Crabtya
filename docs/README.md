@@ -2,6 +2,8 @@
 
 This `docs/` tree is the source of truth for the loader effort.
 
+Crabtya and Crabtya Lite are built on the BepInEx IL2CPP framework.
+
 ## Sections
 
 - `docs/investigation/`: confirmed game/runtime facts, compatibility notes, and hook research.
@@ -20,6 +22,7 @@ This `docs/` tree is the source of truth for the loader effort.
 - DLL mod contract now includes `assemblies` + `entrypoints` and the public `Crabtya.ModApi.dll` surface (`ICrabtyaMod`, `ICrabtyaModContext`, logging, settings registry).
 - Runtime verification still relies on `game/BepInEx/LogOutput.log`, `game/BepInEx/ErrorLog.log`, and `game/Mods/mod-state.json`.
 - Shareable package outputs are now produced by `tools/package-release.ps1` into `packages/loader/` and `packages/mods/`.
+- Foundational runtime dependency: BepInEx IL2CPP (`BepInEx/core`, `BepInEx/interop`, and plugin loading pipeline).
 
 ## Quick Links
 

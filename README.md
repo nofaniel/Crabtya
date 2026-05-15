@@ -10,6 +10,10 @@
   Drop a mod folder into <code>Mods/&lt;mod-id&gt;/</code>, launch the game, done.
 </p>
 
+<p align="center">
+  Crabtya and Crabtya Lite are built on <a href="https://github.com/BepInEx/BepInEx">BepInEx IL2CPP</a>.
+</p>
+
 ---
 
 ## For Players
@@ -167,11 +171,12 @@ See [`.gitignore`](.gitignore). In particular:
 
 Crabtya v1 is feature-complete. See [`PLAN.md`](PLAN.md) for current job status and release gating.
 
-## Post-v1: Crabtya Lite
+## Crabtya Lite
 
-Crabtya Lite is planned as a separate post-v1 product for players who want a curated QoL package without arbitrary mod loading.
+Crabtya Lite is a separate curated QoL package for players who do not need arbitrary community mod loading.
 
-- Lite is intended to cover built-in FOV, mouse-wheel zoom, invert scroll, and No Intro behavior on the main game install.
-- Lite is not a runtime mode flag for full Crabtya; it should ship as its own package and release choice.
-- Users should choose either full Crabtya or Crabtya Lite from Releases unless compatibility is explicitly tested and documented.
-- A GitHub Pages site is later polish, not part of the immediate Crabtya v1 release work.
+- Lite includes built-in FOV, mouse-wheel zoom, invert scroll, and No Intro behavior.
+- Lite can be installed into the Steam version while keeping achievements enabled.
+- Lite uses the original game save data (no isolated modded save path).
+- Lite is a separate release choice from full Crabtya, not a runtime mode toggle.
+- Crabtya Lite is also built on BepInEx IL2CPP.

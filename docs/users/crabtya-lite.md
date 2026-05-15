@@ -4,6 +4,8 @@ Crabtya Lite is a separate plugin for players who only want built-in quality-of-
 
 It is **not** a folder-based mod loader. It does not scan `game/Mods/`, does not load user mod manifests, and does not block achievements or use an isolated save.
 
+Crabtya Lite can be installed into the Steam version of the game, keeps achievements enabled, and uses the original game save data.
+
 ## Crabtya Lite vs Full Crabtya
 
 | Feature | Crabtya Lite | Full Crabtya |
