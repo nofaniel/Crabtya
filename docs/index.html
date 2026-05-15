@@ -147,22 +147,7 @@
       position: relative;
       display: grid;
       place-items: center;
-      isolation: isolate;
       min-height: 260px;
-    }
-
-    .logo-wrap::before {
-      content: "";
-      position: absolute;
-      width: min(96%, 500px);
-      aspect-ratio: 1;
-      border-radius: 32px;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(255, 158, 87, 0.45), transparent 52%),
-        radial-gradient(circle at 70% 85%, rgba(10, 95, 117, 0.28), transparent 54%);
-      filter: blur(1px);
-      z-index: -1;
-      animation: pulse 6s ease-in-out infinite;
     }
 
     .logo {
@@ -213,6 +198,58 @@
       overflow: hidden;
     }
 
+    .lite {
+      margin: 0 auto 1.5rem;
+      width: min(calc(100% - 2rem), var(--max));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(18, 54, 66, 0.08);
+      overflow: hidden;
+      animation: popIn 0.7s ease both;
+    }
+
+    .lite-head {
+      margin: 0;
+      padding: 1rem 1.1rem;
+      background: linear-gradient(120deg, rgba(10, 95, 117, 0.1), rgba(11, 126, 122, 0.14));
+      font-family: "Chakra Petch", sans-serif;
+      font-size: 1.35rem;
+    }
+
+    .lite-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      padding: 1rem 1.1rem 1.2rem;
+    }
+
+    .lite-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(247, 252, 255, 0.82);
+      padding: 0.95rem;
+    }
+
+    .lite-card h3 {
+      margin: 0;
+      font-family: "Chakra Petch", sans-serif;
+      font-size: 1.1rem;
+    }
+
+    .lite-card p {
+      margin: 0.55rem 0 0;
+      color: var(--ink-soft);
+    }
+
+    .lite-links {
+      margin: 0;
+      padding: 0 1.1rem 1.2rem;
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+    }
+
     .how h2 {
       margin: 0;
       padding: 1rem 1.1rem;
@@ -255,14 +292,10 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.04); }
-    }
-
     @media (max-width: 980px) {
       .hero-grid,
-      .grid {
+      .grid,
+      .lite-grid {
         grid-template-columns: 1fr;
       }
 
@@ -326,6 +359,24 @@
         <h2>Why It Is Safe</h2>
         <p>Broken manifests and failing mod entrypoints are isolated. Path handling stays inside each mod folder to avoid accidental escape paths.</p>
       </article>
+    </section>
+
+    <section class="lite" aria-label="Crabtya Lite overview">
+      <h2 class="lite-head">Crabtya Lite</h2>
+      <div class="lite-grid">
+        <article class="lite-card">
+          <h3>What Lite Is</h3>
+          <p>Crabtya Lite is the curated, QoL-focused package. It is designed for players who want trusted quality-of-life improvements without managing arbitrary custom mod folders.</p>
+        </article>
+        <article class="lite-card">
+          <h3>How It Differs</h3>
+          <p>Full Crabtya is the open mod loader platform; Lite is a separate streamlined release with controlled scope and simpler setup for quick everyday use.</p>
+        </article>
+      </div>
+      <div class="lite-links">
+        <a class="btn btn-primary" href="https://github.com/nofaniel/Crabtya/releases">Get Crabtya Lite</a>
+        <a class="btn btn-secondary" href="users/crabtya-lite.html">Read Lite Guide</a>
+      </div>
     </section>
 
     <section class="how" aria-label="How Crabtya works">
